@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Guestbook Admin</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 5 5%22 shape-rendering=%22crispEdges%22%3E%3Cpath fill=%22%23e66b8f%22 d=%22M0 1h5v2H0zM1 0h1v1H1zM3 0h1v1H3zM1 3h3v1H1zM2 4h1v1H2z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin">
+  <div class="login px-box" id="login" hidden>
+    <h2>방명록 관리자</h2>
+    <p id="login-msg">신랑 · 신부 Google 계정으로 로그인하세요.</p>
+    <button class="px-btn" id="btn-login">Google로 로그인</button>
+    <p class="notice" id="inapp" hidden>카카오톡·인스타그램 같은 앱 안의 브라우저에서는 Google 로그인이 막혀요. 오른쪽 위 메뉴에서 <b>Safari / Chrome으로 열기</b>를 눌러주세요.</p>
+    <p><a href="./" class="back-link">← 방명록으로 돌아가기</a></p>
+  </div>
+
+  <main class="admin-wrap" id="main" hidden>
+    <h1 class="print-title" id="print-title"></h1>
+    <div class="admin-head">
+      <h1>📖 방명록 관리 <small id="who" style="font-size:13px;color:var(--ink-2)"></small></h1>
+      <div class="row">
+        <button class="px-btn small secondary" id="btn-print">🖨 앨범 인쇄</button>
+        <button class="px-btn small secondary" id="btn-csv">CSV</button>
+        <button class="px-btn small blue" id="btn-zip">⬇ 전체 백업(ZIP)</button>
+        <a class="px-btn small secondary" href="./">🏠 방명록</a>
+        <a class="px-btn small secondary" href="village.html" target="_blank" rel="noopener">🏡 마을(TV)</a>
+        <button class="px-btn small secondary" id="btn-logout">로그아웃</button>
+      </div>
+    </div>
+
+    <section class="event-panel px-box">
+      <b>🎉 TV 마을 이벤트</b>
+      <div class="row">
+        <button class="px-btn small" data-ev="bouquet">💐 부케 던지기</button>
+        <button class="px-btn small blue" data-ev="group">📸 단체사진</button>
+        <button class="px-btn small secondary" data-ev="fireworks">🎆 불꽃놀이</button>
+      </div>
+      <!-- v4 live panel (WP-00c §4.2): the toggles write app/live · app/settings; #live-slot is where features put their live buttons (ctx.admin.live.add) -->
+      <div class="row live-toggles">
+        <button type="button" class="px-btn small secondary" id="btn-quiet" aria-pressed="false" disabled>🤫 조용 모드: 꺼짐</button>
+        <button type="button" class="px-btn small secondary" id="btn-safe" aria-pressed="false" disabled>🛡 본식 안전 모드: 꺼짐</button>
+      </div>
+      <div class="row live-slot" id="live-slot"></div>
+      <span class="tip" id="ev-status"></span>
+    </section>
+    <p class="notice admin-alert" id="admin-alert" role="status" aria-live="polite" hidden></p>
+
+    <nav class="atabs" id="atabs">
+      <button type="button" data-tab="guests" aria-selected="true">📖 방명록</button>
+      <button type="button" data-tab="snaps">📷 하객 스냅 <span id="snap-n"></span></button>
+      <button type="button" data-tab="capsules">💌 타임캡슐</button>
+      <button type="button" data-tab="report">📊 결혼식 리포트</button>
+      <button type="button" data-tab="settings">⚙️ 설정</button>
+    </nav>
+    <section id="tab-guests">
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <input class="input" id="q" placeholder="이름 · 메시지 검색">
+      <div class="seg" id="filter" style="grid-template-columns:repeat(4,auto)">
+        <button type="button" data-v="all" aria-pressed="true">전체</button>
+        <button type="button" data-v="groom" aria-pressed="false">신랑측</button>
+        <button type="button" data-v="bride" aria-pressed="false">신부측</button>
+        <button type="button" data-v="hidden" aria-pressed="false">숨김</button>
+      </div>
+      <label class="check"><input type="checkbox" id="sel-all"> 보이는 항목 전체 선택</label>
+      <button class="px-btn small secondary" id="btn-del-sel" disabled>선택 삭제</button>
+      <span id="zip-status" class="tip"></span>
+    </div>
+    <div class="grid" id="grid"></div>
+    </section>
+
+    <section id="tab-snaps" hidden>
+      <div class="toolbar">
+        <span class="tip" id="snap-info"></span>
+        <button class="px-btn small blue" id="btn-snap-zip">⬇ 스냅 전체 다운로드</button>
+      </div>
+      <div class="grid snapgrid" id="snapgrid"></div>
+    </section>
+
+    <section id="tab-capsules" hidden>
+      <div class="capsule-panel px-box" id="capsule-panel"></div>
+    </section>
+
+    <section id="tab-report" hidden>
+      <div class="toolbar"><button class="px-btn small blue" id="btn-report-png">🖼 리포트 이미지 저장</button><span class="tip">결혼식이 끝난 뒤 열어보세요. 데이터가 바뀌면 자동으로 다시 계산돼요.</span></div>
+      <div id="report"></div>
+    </section>
+
+    <!-- ⚙️ settings (WP-00c §4.3): phase · safe mode · one row per feature · reset. The rows are built by admin.js from the manifest -->
+    <section id="tab-settings" hidden>
+      <div class="px-box set-box set-now" id="set-top">
+        <b class="set-now-title" id="set-now"></b>
+        <span class="tip">스위치를 켜면 하객 화면에 바로 반영돼요. 당일 기능은 켜 두기만 하면 결혼식 날 자동으로 나타나요.</span>
+      </div>
+      <div class="fgroups" id="set-features" aria-label="기능 목록"></div>
+      <details class="px-box set-box set-adv" id="set-adv">
+        <summary>🛠 고급 설정 <span class="tip">평소엔 건드리지 않아도 돼요</span></summary>
+        <div class="set-adv-body">
+          <div class="set-line"><b>🕒 지금 페이즈</b> <span id="set-phase-now"></span> <span class="tip" id="set-phase-src"></span></div>
+          <div class="set-line">
+            <label for="set-phase-sel"><b>페이즈 강제</b> <span class="tip">비상용 · 리허설은 주소에 ?phase= 를 쓰세요</span></label>
+            <select class="input" id="set-phase-sel">
+              <option value="auto">자동 (시계)</option><option value="pre">결혼 전 (pre)</option><option value="live">본식 당일 (live)</option>
+              <option value="after">결혼 후 (after)</option><option value="anniversary">1주년 (anniversary)</option>
+            </select>
+          </div>
+          <div class="notice" id="set-phase-confirm" hidden>
+            <p id="set-phase-ask"></p>
+            <div class="row"><button type="button" class="px-btn small" id="set-phase-ok">바꾸기</button><button type="button" class="px-btn small secondary" id="set-phase-cancel">취소</button></div>
+          </div>
+          <div class="set-line"><b>🛡 본식 안전 모드</b> <button type="button" class="px-btn small secondary" id="set-safe" aria-pressed="false" disabled>꺼짐</button> <span class="tip">켜면 '본식 안전' 표시가 없는 기능이 전부 꺼져요</span></div>
+          <div class="set-line set-foot">
+            <button type="button" class="px-btn small secondary" id="set-reset">모든 기능 기본값으로</button>
+            <span class="tip" id="set-updated"></span>
+          </div>
+        </div>
+      </details>
+      <p class="tip set-msg" id="set-msg" role="status"></p>
+    </section>
+  </main>
+
+  <dialog id="edit" class="edit-dlg">
+    <form method="dialog" class="edit-form" id="edit-form">
+      <h2>방명록 수정</h2>
+      <div class="edit-cols">
+        <div class="edit-left">
+          <canvas id="edit-preview" class="pixel" width="132" height="204"></canvas>
+          <div class="edit-avatar" id="edit-avatar"></div>
+        </div>
+        <div class="edit-right">
+          <label class="field">이름 <input class="input" id="e-name" maxlength="30" required></label>
+          <label class="field">구분
+            <select class="input" id="e-side"><option value="groom">신랑측</option><option value="bride">신부측</option><option value="both">둘 다</option></select>
+          </label>
+          <label class="field">마을 활동
+            <select class="input" id="e-act"><option value="walk">🚶 산책</option><option value="dance">💃 댄스</option><option value="fish">🎣 낚시</option><option value="chat">💬 수다</option><option value="eat">🍰 먹방</option><option value="photo">📷 사진사</option></select>
+          </label>
+          <label class="field">메시지 <textarea class="input" id="e-msg" maxlength="300"></textarea></label>
+        </div>
+      </div>
+      <p class="err" id="e-err"></p>
+      <div class="row end">
+        <button class="px-btn secondary" value="cancel" formnovalidate>취소</button>
+        <button class="px-btn" id="e-save" value="save">저장</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="js/vendor/jszip.min.js"></script>
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

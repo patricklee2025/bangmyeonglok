@@ -1,0 +1,58 @@
+/* WP-09 양가 섞이기 빙고 — 모든 선택자는 .f-bingo- 로 시작 (02 §1) */
+
+/* ---------- the board (guest screen · village sheet) ---------- */
+.f-bingo-board { display: flex; flex-direction: column; gap: 10px; }
+.f-bingo-code { margin: 0; padding: 8px 10px; text-align: center; font-weight: 700; font-size: 16px; background: #fff3c4; box-shadow: inset 0 0 0 3px var(--ink, #2b2033); }
+.f-bingo-status { margin: 0; text-align: center; font-size: 15px; color: var(--ink-2, #6b5d73); }
+.f-bingo-grid { display: grid; grid-template-columns: repeat(4, minmax(72px, 1fr)); gap: 6px; }
+.f-bingo-cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 76px; padding: 4px 2px;
+  border: 0; cursor: pointer; font: inherit; color: var(--ink, #2b2033); background: #fff; box-shadow: inset 0 0 0 3px var(--ink, #2b2033); touch-action: manipulation; }
+.f-bingo-cell:focus-visible { outline: 3px solid #ffd75e; outline-offset: 1px; }
+.f-bingo-ico { font-size: 22px; line-height: 1; }
+.f-bingo-txt { font-size: 11px; line-height: 1.2; text-align: center; word-break: keep-all; overflow-wrap: anywhere; }
+.f-bingo-k-code { background: #eef2ff; }
+.f-bingo-k-auto { background: #effbea; }
+.f-bingo-on { background: #ffd6e4; }
+.f-bingo-stamp { position: absolute; right: 3px; top: 1px; font-size: 20px; font-weight: 700; color: #c45a86; transform: rotate(-12deg); }
+.f-bingo-detail { display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 12px; background: #fff; box-shadow: inset 0 0 0 3px var(--ink, #2b2033); }
+.f-bingo-dico { margin: 0; text-align: center; font-size: 40px; line-height: 1; }
+.f-bingo-dtitle { text-align: center; font-size: 18px; word-break: keep-all; }
+.f-bingo-dok { margin: 0; text-align: center; font-size: 18px; font-weight: 700; color: #c45a86; }
+.f-bingo-honor { min-height: 56px; }
+.f-bingo-armed { --bg: #ffd75e; --fg: var(--ink, #2b2033); --sh: #c9a43a; }
+.f-bingo-coderow { display: flex; gap: 6px; align-items: stretch; }
+.f-bingo-input { flex: 1; min-width: 0; font-size: 22px; letter-spacing: .25em; text-transform: uppercase; text-align: center; }
+.f-bingo-msg { margin: 0; text-align: center; font-weight: 700; color: #c8433f; }
+.f-bingo-msg.f-bingo-good { color: var(--green, #3c8a3c); }
+.f-bingo-back { align-self: center; }
+.f-bingo-saved:empty { display: none; }
+
+/* the line overlay (1.5 s) */
+.f-bingo-cheer { position: fixed; left: 50%; top: 40%; z-index: 60; transform: translate(-50%, -50%); padding: 18px 28px; pointer-events: none;
+  font-size: 34px; font-weight: 700; color: var(--ink, #2b2033); background: #ffd75e; box-shadow: 0 0 0 4px var(--ink, #2b2033), 0 10px 0 4px rgba(43, 32, 51, .25); white-space: nowrap; }
+.f-bingo-cheer.f-bingo-pop { animation: f-bingo-pop .5s steps(5) both; }
+@keyframes f-bingo-pop { from { transform: translate(-50%, -50%) scale(.4); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .f-bingo-cheer.f-bingo-pop { animation: none; } }
+
+/* ---------- TV: rm zone leaders ---------- */
+.f-bingo-rank { display: flex; flex-direction: column; gap: calc(var(--s, 4) * 1.2px); padding: calc(var(--s, 4) * 2.5px) calc(var(--s, 4) * 3px); color: #fff; background: rgba(43, 32, 51, .86); font-size: .9em; }
+.f-bingo-rtitle { color: #ffd75e; }
+.f-bingo-rlist { display: flex; flex-direction: column; gap: calc(var(--s, 4) * 1px); }
+.f-bingo-rrow { display: flex; align-items: center; gap: calc(var(--s, 4) * 1.5px); }
+.f-bingo-rpos { width: 1.2em; text-align: center; font-weight: 700; color: #ffd75e; }
+.f-bingo-rface { width: calc(var(--s, 4) * 5.5px); height: calc(var(--s, 4) * 8.5px); image-rendering: pixelated; flex: none; }
+.f-bingo-rname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- admin ---------- */
+.f-bingo-arank { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.f-bingo-arr { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: #fff; box-shadow: inset 0 0 0 2px var(--ink, #2b2033); }
+.f-bingo-apos { width: 1.6em; text-align: center; font-weight: 700; }
+.f-bingo-arr .f-bingo-aname { flex: 1; min-width: 0; }
+.f-bingo-amissions { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px; }
+.f-bingo-am { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 8px; background: #fff; box-shadow: inset 0 0 0 2px var(--ink, #2b2033); cursor: pointer; font-size: 14px; }
+.f-bingo-am input { width: 22px; height: 22px; flex: none; }
+.f-bingo-am .f-bingo-aname { flex: 1; min-width: 0; }
+.f-bingo-azero { width: 100%; font-size: 12px; color: #c8433f; }
+.f-bingo-am:has(.f-bingo-azero) { flex-wrap: wrap; }
+.f-bingo-arow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.f-bingo-amsg:empty { display: none; }

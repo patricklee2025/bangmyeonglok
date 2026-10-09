@@ -1,0 +1,20 @@
+/* WP-06 덕담 번역 — 모든 선택자는 .f-translate- 로 시작 (02 §1). TV 둘째 줄의 모양은 코어 티커(.msg2)가 그림 */
+.f-translate-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 8px; }
+.f-translate-engine { margin: 0; font-weight: 700; }
+.f-translate-engine[data-state="none"] { color: #c8433f; font-weight: 400; }
+.f-translate-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 6px; }
+.f-translate-progress:empty { display: none; }
+.f-translate-check { display: flex; align-items: center; gap: 8px; min-height: 36px; font-size: 14px; cursor: pointer; }
+.f-translate-check input { width: 22px; height: 22px; flex: none; }
+.f-translate-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.f-translate-row { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; }
+.f-translate-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.f-translate-lang { font-size: 12px; color: var(--ink-2, #6b5d73); }
+.f-translate-st { padding: 1px 8px; font-size: 12px; font-weight: 700; background: #fff; box-shadow: inset 0 0 0 2px var(--ink, #2b2033); }
+.f-translate-st-none { background: #fff3c4; }
+.f-translate-st-stale { background: #ffd6d6; }
+.f-translate-st-chrome { background: #dff3d4; }
+.f-translate-st-manual { background: #dbe4ff; }
+.f-translate-src { margin: 0; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
+.f-translate-ta { width: 100%; min-height: 3.2em; resize: vertical; }
+.f-translate-actions { display: flex; align-items: center; gap: 10px; }

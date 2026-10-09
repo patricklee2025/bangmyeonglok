@@ -1,0 +1,5 @@
+# Only ./public is the website. docs/, tests/, tools/, dev/ never get published.
+# Netlify Drop (drag & drop): drag the *public* folder.
+# Response headers live in public/_headers so they also apply to drag & drop deploys.
+[build]
+  publish = "public"

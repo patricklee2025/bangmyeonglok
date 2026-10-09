@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<!--PAGE-->
+<title>지환 ♥ 선경 마을 지도 시안</title>
+<style>
+  /* one look on purpose: a night-green game frame around the painted village (single theme) */
+  :root {
+    --ink: #2b2033; --paper: #fff8ec; --paper-2: #f6ead4; --pink: #e66b8f; --pine: #2c5f4f; --gold: #e8c35e;
+    --font: 'Galmuri11', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  @font-face { font-family: 'Galmuri11'; src: url('fonts/Galmuri11.woff2') format('woff2'); font-display: swap; }
+  @font-face { font-family: 'Galmuri11'; font-weight: 700; src: url('fonts/Galmuri11-Bold.woff2') format('woff2'); font-display: swap; }
+  html, body { height: 100%; margin: 0; overflow: hidden; background: var(--pine); overscroll-behavior: none; }
+  body { font-family: var(--font); color: var(--ink); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #map { position: fixed; inset: 0; touch-action: none; image-rendering: pixelated; cursor: grab; }
+  #map:active { cursor: grabbing; }
+  .px { background: var(--paper); box-shadow: inset 0 0 0 3px var(--ink), 0 3px 0 rgba(0, 0, 0, .25); border: 0; font: inherit; color: var(--ink); }
+  #top { position: fixed; left: 10px; right: 10px; top: calc(10px + env(safe-area-inset-top, 0px)); display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
+  #title { padding: 8px 12px; font-weight: 700; font-size: 14px; pointer-events: auto; }
+  #title small { display: block; font-weight: 400; font-size: 11px; color: #5a4d63; margin-top: 2px; }
+  #mode { padding: 10px 12px; min-height: 44px; font-weight: 700; font-size: 13px; cursor: pointer; pointer-events: auto; }
+  #mode:focus-visible, .chip:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
+  #chips { position: fixed; left: 8px; right: 8px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+  .chip { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 7px; min-height: 50px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .chip-i { font-size: 18px; line-height: 1; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); box-shadow: inset 0 -3px 0 var(--pink), 0 3px 0 rgba(0, 0, 0, .25); }
+  #rail-wrap { position: fixed; right: 12px; top: calc(74px + env(safe-area-inset-top, 0px)); width: 56px; touch-action: none; cursor: pointer; }
+  #rail-in { position: relative; box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--paper); border-radius: 1px; overflow: hidden; opacity: .92; }
+  #rail { display: block; }
+  #rail-box { position: absolute; left: 0; top: 0; box-shadow: inset 0 0 0 2px #fff, 0 0 0 1px var(--ink); background: rgba(255, 255, 255, .18); pointer-events: none; }
+  #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; }
+  #hint { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 10px 14px; font-size: 13px; text-align: center; transition: opacity .4s; pointer-events: none; width: max-content; max-width: calc(100vw - 32px); line-height: 1.5; }
+  #hint.gone { opacity: 0; }
+  #hint b { margin-right: 6px; }
+  body[data-mode="tv"] #rail-wrap { display: none; }
+  body[data-mode="tv"] #chips { left: 50%; right: auto; transform: translateX(-50%); width: min(560px, calc(100vw - 16px)); pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { #hint { transition: none; } }
+</style>
+<!--/HEAD-->
+</head>
+<body>
+<canvas id="map" aria-label="지환 ♥ 선경 결혼식 픽셀 마을 지도 (시안)"></canvas>
+<div id="top">
+  <div id="title" class="px">지환 ♥ 선경 마을 <small>지도 시안 v5 · 하객·움직임은 데모</small></div>
+  <button id="mode" class="px" type="button">📺 TV로 보기</button>
+</div>
+<div id="rail-wrap" aria-hidden="true"><div id="rail-in"><canvas id="rail"></canvas><div id="rail-box"></div></div></div>
+<div id="hint" class="px"><b>👆</b><span id="hint-text">위아래로 밀어 둘러보기 · 두 번 탭하면 전체</span></div>
+<div id="toast" class="px" role="status" hidden></div>
+<nav id="chips" aria-label="마을 구역으로 이동"></nav>
+<script type="module" src="main.js"></script>
+<!--/BODY-->
+</body>
+</html>

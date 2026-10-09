@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#12101a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wedding Village">
+<link rel="manifest" href="village.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Wedding Village</title>
+<link rel="preload" href="fonts/Galmuri11.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 5 5%22 shape-rendering=%22crispEdges%22%3E%3Cpath fill=%22%23e66b8f%22 d=%22M0 1h5v2H0zM1 0h1v1H1zM3 0h1v1H3zM1 3h3v1H1zM2 4h1v1H2z%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="village">
+  <div id="stage"><canvas id="world"></canvas></div>
+  <canvas id="overlay"></canvas>
+  <div class="hud">
+    <div class="lvpanel"><div class="lvrow"><b>Lv.<span id="lv">0</span></b><span>🏡 <b id="count-n">0</b></span></div><div class="bar"><i id="lv-bar"></i></div><small id="lv-next"></small></div>
+    <div class="arrival" id="arrival"></div>
+    <div class="ticker empty" id="ticker"><canvas width="22" height="34"></canvas><span class="nm"></span><span class="tag"></span><span class="mcol"><span class="l1"><span class="pre2"></span><span class="msg"></span></span><span class="msg2"></span></span></div>
+    <div class="qr"><canvas id="qr-canvas"></canvas><span id="qr-label"></span></div>
+    <div class="demo-flag" id="demo-flag" hidden>DEMO</div>
+    <figure class="polaroid" id="polaroid" aria-live="polite"><img id="pol-img" alt=""><figcaption><canvas width="22" height="34"></canvas><span><b id="pol-name"></b><small id="pol-cap"></small></span></figcaption></figure>
+    <div class="mctl" id="mctl">
+      <button type="button" id="b-fs" aria-label="Fullscreen">⛶</button>
+      <button type="button" id="b-fit" aria-label="Fit or fill">🗺</button>
+      <button type="button" id="b-me" aria-label="Follow my character" hidden>📍</button>
+    </div>
+    <div class="mremote" id="mremote" hidden></div>
+    <div class="hz hz-tl"></div><div class="hz hz-tr"></div><div class="hz hz-rm"></div><div class="hz hz-tc"></div>
+    <div class="spot" id="spot" aria-live="polite"></div>
+    <div class="quiet-chip" id="quiet-chip" hidden>🤫 <span></span></div>
+  </div>
+  <div class="sheet-bg" id="sheet-bg" hidden></div>
+  <section class="sheet" id="snap-sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <button type="button" class="sheet-x" id="sheet-x" aria-label="Close">✕</button>
+    <div class="snapbox" id="snap-village"></div>
+  </section>
+  <section class="sheet" id="fsheet" hidden role="dialog" aria-modal="true" aria-labelledby="fsheet-title"><button type="button" class="sheet-x" id="fsheet-x">✕</button><h3 id="fsheet-title"></h3><div id="fsheet-body"></div></section>
+  <div class="start-hint">더블클릭/F 전체화면 · S 스크린샷 · H 패널 숨기기 · N 낮/밤 · B 부케 · G 단체사진 · X 불꽃놀이</div>
+  <script type="module" src="js/village.js"></script>
+</body>
+</html>

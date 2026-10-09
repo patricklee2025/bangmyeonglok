@@ -1,0 +1,21 @@
+/* WP-11 내 픽셀 카드 — 모든 선택자는 .f-card- 로 시작 (02 §1) */
+.f-card-frame { width: min(100%, 420px); margin: 0 auto; box-shadow: 0 0 0 3px var(--ink, #2b2033); background: #fff8ec; }
+.f-card-canvas { display: block; width: 100%; height: auto; aspect-ratio: 1080 / 1350; image-rendering: pixelated; background: repeating-linear-gradient(45deg, #fff8ec 0 10px, #f6ead8 10px 20px); }
+.f-card-themes { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 12px auto 4px; }
+.f-card-label { width: 100%; text-align: center; font-size: 13px; color: var(--ink-2, #6b5d73); }
+.f-card-theme { min-height: 44px; min-width: 84px; padding: 6px 12px; border: 0; cursor: pointer; font: inherit; font-weight: 700; font-size: 15px;
+  background: #fff; color: var(--ink, #2b2033); box-shadow: inset 0 0 0 3px var(--ink, #2b2033); touch-action: manipulation; }
+.f-card-theme[aria-pressed="true"] { background: var(--ink, #2b2033); color: #fff; }
+.f-card-theme:focus-visible { outline: 3px solid #ffd75e; outline-offset: 2px; }
+.f-card-status { min-height: 1.3em; margin: 6px 0; text-align: center; }
+.f-card-status:empty { visibility: hidden; }
+.f-card-foot { display: flex; flex-direction: row; gap: 8px; }
+.f-card-foot .f-card-save { flex: 2 1 0; min-width: 0; }
+.f-card-foot .f-card-back { flex: 1 1 0; min-width: 0; }
+/* landscape phones: a slimmer bar so the card stays in view */
+@media (max-height: 500px) { .f-card-foot .px-btn { min-height: 48px; padding-top: 4px; padding-bottom: 4px; font-size: 17px; } }
+.f-card-save[disabled] { opacity: .55; cursor: progress; }
+/* village sheet: the card a little smaller so the save button stays in view */
+.f-card-frame.f-card-small { width: min(78%, 300px); }
+.f-card-sheetfoot { display: flex; justify-content: center; margin-top: 6px; }
+.f-card-sheetfoot .f-card-save { width: min(100%, 420px); }

@@ -1,0 +1,23 @@
+{
+  "name": "wedding-guestbook",
+  "version": "3.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Pixel village wedding guestbook (static site in ./public, Firebase Firestore). Dev tooling only — the site itself has no build step.",
+  "scripts": {
+    "serve": "node tools/serve.mjs",
+    "test": "node tests/run.mjs",
+    "test:quick": "node tests/run.mjs --quick",
+    "test:core": "node tests/run.mjs --only core",
+    "test:features": "node tests/run.mjs --only features",
+    "golden:update": "node tests/run.mjs golden-sprites --update",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-wgb \"node tests/rules/run.mjs\"",
+    "gen:kiosk": "node tools/gen-kiosk.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

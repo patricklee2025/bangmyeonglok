@@ -1,0 +1,9 @@
+# Netlify response headers. Lives in public/ because the site is deployed by dragging the public folder
+# (netlify.toml at the repo root is only read by Git-connected deploys).
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# WP-13: the service worker is checked on every visit (a new deploy or the kill switch reaches every device)
+/sw.js
+  Cache-Control: no-cache

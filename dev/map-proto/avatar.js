@@ -1,0 +1,1 @@
+../../public/js/avatar.js

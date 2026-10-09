@@ -1,0 +1,8 @@
+/* WP-07 bgm — admin ⚙️ section only (the TV has no visible part besides the core banner) */
+.f-bgm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 6px 0; }
+.f-bgm-check { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; cursor: pointer; }
+.f-bgm-check input { width: 18px; height: 18px; }
+.f-bgm-vol { width: min(200px, 46vw); min-height: 32px; }
+.f-bgm-volout { min-width: 3.2em; font-variant-numeric: tabular-nums; }
+.f-bgm-pin { max-width: 100%; }
+.f-bgm-note { margin: 6px 0 0; }

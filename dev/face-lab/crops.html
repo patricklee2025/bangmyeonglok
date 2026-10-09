@@ -1,0 +1,9 @@
+<!doctype html><meta charset=utf-8><body><script type=module>
+import {preloadFace} from '../../public/js/face.js';
+const faceapi=await preloadFace(); window.crops=[];
+for(const i of [6,3]){ const img=new Image(); img.src=`sample${i}.jpg`; await img.decode();
+ const dets=await faceapi.detectAllFaces(img,new faceapi.TinyFaceDetectorOptions({inputSize:608,scoreThreshold:0.4})).withFaceLandmarks();
+ for(const d of dets.slice(0,3)){ const P=d.landmarks.positions; const fw=P[16].x-P[0].x, side=fw/0.4, fcx=(P[0].x+P[16].x)/2, browY=Math.min(...P.slice(17,27).map(p=>p.y)), fcy=(browY+P[8].y)/2;
+  const c=document.createElement('canvas'); c.width=c.height=720; c.getContext('2d').drawImage(img,fcx-side/2,fcy-side*0.42,side,side,0,0,720,720); window.crops.push(c.toDataURL('image/jpeg',0.9)); } }
+document.title='done';
+</script>

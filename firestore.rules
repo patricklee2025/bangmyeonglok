@@ -1,0 +1,310 @@
+rules_version = '2';
+// 웨딩 픽셀 마을 방명록 — Firestore 보안 규칙 (v4)
+// Firebase 콘솔 > Firestore Database > 규칙(Rules) 탭에 전체를 붙여넣고 "게시"하세요.
+// ⚠️ 관리자 이메일 목록을 public/js/config.js 의 adminEmails 와 동일하게 맞춰주세요.
+// ⚠️ 타임캡슐 공개일(capsules 블록의 timestamp.date)을 config.js 의 capsuleOpen 과 같게 맞춰주세요.
+// ⚠️ 하객 1명당 스냅 수(snapSlotOk 의 ['0'..'4'] = 5장)를 config.js 의 snapLimitPerGuest 와 같게 맞춰주세요.
+// v4 = v3.2 그대로 + app/settings · app/live · checkins · translations · bingo · polls · votes · thanks · postcards · postcardImages · anniv
+//      + guests.priv · notes ("신랑·신부에게만" 메시지)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in ['jihwan.patrick.lee@gmail.com', 'sunkyung0212@gmail.com'];
+    }
+    function guestPath(id) { return /databases/$(database)/documents/guests/$(id); }
+    // avatar values are small ints / short names / #hex colors — bound every one so a guest doc can't be 1 MB
+    function smallVal(m, k) { return !(k in m) || m[k] is int || (m[k] is string && m[k].size() <= 24); }
+    function validAvatar(a) {
+      return a is map
+        && a.keys().hasOnly(['skin', 'hair', 'hairStyle', 'face', 'eyes', 'brows', 'mouth', 'beard', 'glasses', 'outfit', 'color', 'color2', 'acc', 'hp'])
+        && smallVal(a, 'skin') && smallVal(a, 'hair') && smallVal(a, 'hairStyle') && smallVal(a, 'face') && smallVal(a, 'eyes')
+        && smallVal(a, 'brows') && smallVal(a, 'mouth') && smallVal(a, 'beard') && smallVal(a, 'glasses') && smallVal(a, 'outfit')
+        && smallVal(a, 'color') && smallVal(a, 'color2') && smallVal(a, 'acc')
+        && (!('hp' in a) || (a.hp is map && a.hp.keys().hasOnly(['t', 'l', 'b', 'c', 'k'])
+              && smallVal(a.hp, 't') && smallVal(a.hp, 'l') && smallVal(a.hp, 'b') && smallVal(a.hp, 'c') && smallVal(a.hp, 'k')));
+    }
+    function validGuestFields(d) {
+      return d.name is string && d.name.size() > 0 && d.name.size() <= 30
+        && d.message is string && d.message.size() <= 300
+        && d.side in ['groom', 'bride', 'both']
+        && validAvatar(d.avatar)
+        && (!('activity' in d) || d.activity in ['walk', 'dance', 'fish', 'chat', 'eat', 'photo']);
+    }
+    // blobs must be base64 data: URLs of the right kind (never a javascript:/https: link that admin would open)
+    function isJpeg(v) { return v is string && v.size() < 900000 && v.matches('data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+'); }
+    function isAudio(v) { return v is string && v.size() < 900000 && v.matches('data:audio/[a-z0-9.+-]+(;[a-zA-Z0-9=.+-]+)*;base64,[A-Za-z0-9+/=]+'); }
+    // snap doc id = "<guestId>_<slot>", slot 0..4 → at most 5 snaps per guest, enforced here
+    function snapSlotOk(id, gid) {
+      return id.split('_').size() == 2 && id.split('_')[0] == gid && id.split('_')[1] in ['0', '1', '2', '3', '4'];
+    }
+
+    // 방명록: 누구나 읽기(마을 화면) · 누구나 작성 · 수정/삭제는 관리자
+    match /guests/{id} {
+      allow read: if true;
+      // v4 priv: 메시지는 notes/{id}(관리자 전용)에 있음 → 공개 문서의 message 는 비어 있어야 함
+      allow create: if request.resource.data.keys().hasOnly(['name', 'side', 'message', 'priv', 'avatar', 'activity', 'hidden', 'hasPhoto', 'hasVoice', 'hasCapsule', 'createdAt'])
+        && validGuestFields(request.resource.data)
+        && request.resource.data.hidden == false
+        && (!('priv' in request.resource.data) || (request.resource.data.priv is bool && (request.resource.data.priv == false || request.resource.data.message == '')))
+        && request.resource.data.hasPhoto is bool
+        && (!('hasVoice' in request.resource.data) || request.resource.data.hasVoice is bool)
+        && (!('hasCapsule' in request.resource.data) || request.resource.data.hasCapsule is bool)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'side', 'message', 'avatar', 'activity', 'hidden'])
+        && validGuestFields(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // 원본 사진: 방명록과 같은 배치로만 생성 · 관리자만 열람
+    match /photos/{id} {
+      allow create: if existsAfter(guestPath(id)) && getAfter(guestPath(id)).data.hasPhoto == true
+        && request.resource.data.keys().hasOnly(['data', 'createdAt'])
+        && isJpeg(request.resource.data.data)
+        && request.resource.data.createdAt == request.time;
+      allow read, delete: if isAdmin();
+    }
+
+    // 음성 축하 메시지: 방명록과 같은 배치로만 생성 · 관리자만 열람
+    match /voices/{id} {
+      allow create: if existsAfter(guestPath(id)) && getAfter(guestPath(id)).data.hasVoice == true
+        && request.resource.data.keys().hasOnly(['data', 'mime', 'createdAt'])
+        && isAudio(request.resource.data.data)
+        && request.resource.data.mime is string && request.resource.data.mime.size() < 60
+        && request.resource.data.createdAt == request.time;
+      allow read, delete: if isAdmin();
+    }
+
+    // 1주년 타임캡슐: 관리자도 공개일 전에는 읽을 수 없음 (서버가 날짜를 강제)
+    match /capsules/{id} {
+      allow create: if existsAfter(guestPath(id)) && getAfter(guestPath(id)).data.hasCapsule == true
+        && request.resource.data.keys().hasOnly(['text', 'name', 'createdAt'])
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000
+        && request.resource.data.name is string && request.resource.data.name.size() <= 30
+        && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin() && request.time >= timestamp.date(2028, 4, 10);
+      allow delete: if isAdmin();
+    }
+
+    // v4 "신랑·신부에게만" 메시지: 방명록(priv == true)과 같은 배치로만 생성 · 관리자만 열람 · 수정 없음
+    match /notes/{id} {
+      allow create: if existsAfter(guestPath(id)) && getAfter(guestPath(id)).data.get('priv', false) == true
+        && request.resource.data.keys().hasOnly(['message', 'createdAt'])
+        && request.resource.data.message is string && request.resource.data.message.size() > 0 && request.resource.data.message.size() <= 300
+        && request.resource.data.createdAt == request.time;
+      allow read, delete: if isAdmin();
+    }
+
+    // 하객 스냅 사진: 방명록을 남긴 하객만, 1인당 5장까지 업로드 · TV 슬라이드쇼(공개) · 숨기기/삭제는 관리자
+    match /snaps/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['gid', 'name', 'caption', 'data', 'hidden', 'createdAt'])
+        && request.resource.data.gid is string && snapSlotOk(id, request.resource.data.gid)
+        && exists(guestPath(request.resource.data.gid))
+        && request.resource.data.name is string && request.resource.data.name.size() <= 30
+        && request.resource.data.caption is string && request.resource.data.caption.size() <= 60
+        && isJpeg(request.resource.data.data)
+        && request.resource.data.hidden == false   // 승인제(snapApproval: true)로 바꾸면 == true 로 수정
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hidden']);
+      allow delete: if isAdmin();
+    }
+
+    // 폰 리모컨: 하객별 문서 1개(덮어쓰기, n = 누른 횟수) — 폰은 몇 명만, TV는 전체를 구독
+    // 같은 하객의 연타는 2초에 1번까지만 (앱 버튼은 3초 쿨다운) → 콘솔 스팸으로 무료 한도를 소진하기 어렵게
+    match /pulse/{gid} {
+      allow read: if true;
+      allow create: if exists(guestPath(gid))
+        && request.resource.data.keys().hasOnly(['type', 'n', 'createdAt'])
+        && request.resource.data.type in ['heart', 'clap', 'dance', 'jump', 'greet']
+        && request.resource.data.n == 1
+        && request.resource.data.createdAt == request.time;
+      allow update: if exists(guestPath(gid))
+        && request.resource.data.keys().hasOnly(['type', 'n', 'createdAt'])
+        && request.resource.data.type in ['heart', 'clap', 'dance', 'jump', 'greet']
+        && request.resource.data.n == resource.data.get('n', 0) + 1
+        && request.time > resource.data.get('createdAt', timestamp.date(2000, 1, 1)) + duration.value(2, 's')
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // 이벤트: 관리자만 실행 (부케 던지기 / 단체사진 / 불꽃놀이)
+    match /events/{id} {
+      allow read: if true;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['type', 'createdAt'])
+        && request.resource.data.type in ['bouquet', 'group', 'fireworks']
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // ================= v4 =================
+    function guestExists(id) { return id is string && id.size() > 0 && id.size() <= 64 && exists(guestPath(id)); }
+    function bilingual(m, n) {
+      return m is map && m.keys().hasOnly(['ko', 'en'])
+        && m.get('ko', '') is string && m.get('ko', '').size() <= n
+        && m.get('en', '') is string && m.get('en', '').size() <= n;
+    }
+    function optBilingual(d, k, n) { return d.get(k, null) == null || bilingual(d[k], n); }
+
+    // 기능 플래그 · 페이즈 · 기능 설정: 관리자만 쓰기, 모든 기기가 읽음
+    match /app/settings {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['features', 'safe', 'phase', 'cfg', 'updatedAt'])
+        && request.resource.data.get('features', {}) is map && request.resource.data.get('features', {}).size() <= 40
+        && request.resource.data.get('safe', false) is bool
+        && request.resource.data.get('phase', 'auto') in ['auto', 'pre', 'live', 'after', 'anniversary']
+        && request.resource.data.get('cfg', {}) is map && request.resource.data.get('cfg', {}).size() <= 40
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // 라이브: 식순 큐 · 조용 모드 · 열린 투표 · 한 줄 공지
+    match /app/live {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['cue', 'cueSeq', 'cueAt', 'quiet', 'poll', 'msg', 'updatedAt'])
+        && (request.resource.data.get('cue', null) == null || (request.resource.data.cue is string && request.resource.data.cue.size() <= 24))
+        && request.resource.data.get('cueSeq', 0) is int
+        && (request.resource.data.get('cueAt', null) == null || request.resource.data.cueAt is timestamp)
+        && request.resource.data.get('quiet', false) is bool
+        && (request.resource.data.get('poll', null) == null || (request.resource.data.poll is string && request.resource.data.poll.size() <= 24))
+        && optBilingual(request.resource.data, 'msg', 80)
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // 체크인: 사전 입주한 하객이 결혼식 날 도착을 알림 · 생성만 (되돌리기는 관리자 삭제)
+    match /checkins/{gid} {
+      allow read: if true;
+      allow create: if guestExists(gid)
+        && request.resource.data.keys().hasOnly(['via', 'createdAt'])
+        && request.resource.data.via in ['phone', 'kiosk', 'entrance', 'admin']
+        && (request.resource.data.via != 'admin' || isAdmin())
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // 덕담 번역: 관리자만 저장 (TV·폰은 읽기만)
+    match /translations/{gid} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['src', 'ko', 'en', 'engine', 'updatedAt'])
+        && request.resource.data.src in ['ko', 'en']
+        && request.resource.data.ko is string && request.resource.data.ko.size() <= 600
+        && request.resource.data.en is string && request.resource.data.en.size() <= 600
+        && request.resource.data.engine is string && request.resource.data.engine.size() <= 20
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // 양가 섞이기 빙고: 문서 id = 하객 id · 완료 칸은 늘어나기만 · 1초에 1번
+    function bingoOk(d) {
+      return d.keys().hasOnly(['done', 'lines', 'updatedAt'])
+        && d.done is list && d.done.size() <= 16
+        && d.done.hasOnly(['m0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11',
+                           'm12', 'm13', 'm14', 'm15', 'm16', 'm17', 'm18', 'm19', 'm20', 'm21', 'm22', 'm23'])
+        && d.lines is int && d.lines >= 0 && d.lines <= 10
+        && d.updatedAt == request.time;
+    }
+    match /bingo/{gid} {
+      allow read: if true;
+      allow create: if guestExists(gid) && bingoOk(request.resource.data);
+      allow update: if guestExists(gid) && bingoOk(request.resource.data)
+        && request.resource.data.done.hasAll(resource.data.done)
+        && request.resource.data.lines >= resource.data.lines
+        && request.time > resource.data.updatedAt + duration.value(1, 's');
+      allow delete: if isAdmin();
+    }
+
+    // 실시간 투표: 관리자가 만들고 열고 닫음 (결과도 관리자가 저장)
+    match /polls/{pid} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && pid.matches('p[a-z0-9]{1,12}')
+        && request.resource.data.keys().hasOnly(['q', 'kind', 'options', 'open', 'order', 'result', 'createdAt', 'updatedAt'])
+        && bilingual(request.resource.data.q, 120)
+        && request.resource.data.kind in ['choice', 'guest']
+        && request.resource.data.options is list && request.resource.data.options.size() <= 8
+        && request.resource.data.open is bool
+        && request.resource.data.order is int
+        && (request.resource.data.get('result', null) == null || request.resource.data.result is map)
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // 투표: 문서 id = "<pollId>_<guestId>" (1인 1표 · 열려 있는 동안 2초 간격으로 바꿀 수 있음)
+    function pollPath(pid) { return /databases/$(database)/documents/polls/$(pid); }
+    function voteOk(vid, d) {
+      let parts = vid.split('_');
+      let poll = get(pollPath(parts[0])).data;
+      return parts.size() == 2
+        && d.keys().hasOnly(['pid', 'gid', 'choice', 'updatedAt'])
+        && d.pid == parts[0] && d.gid == parts[1]
+        && guestExists(parts[1])
+        && poll.open == true
+        && ((poll.kind == 'choice' && d.choice is int && d.choice >= 0 && d.choice < poll.options.size())
+          || (poll.kind == 'guest' && d.choice is string && guestExists(d.choice)))
+        && d.updatedAt == request.time;
+    }
+    match /votes/{vid} {
+      allow read: if true;
+      allow create: if voteOk(vid, request.resource.data);
+      allow update: if voteOk(vid, request.resource.data)
+        && request.time > resource.data.updatedAt + duration.value(2, 's');
+      allow delete: if isAdmin();
+    }
+
+    // 하객별 감사 카드: 문서 id = 추측 불가능한 토큰(링크로 전달) · 목록 조회는 관리자만
+    match /thanks/{token} {
+      allow get: if token.matches('[A-Za-z0-9]{20,40}');
+      allow list: if isAdmin();
+      allow create, update: if isAdmin()
+        && token.matches('[A-Za-z0-9]{20,40}')
+        && request.resource.data.keys().hasOnly(['gid', 'name', 'note', 'photo', 'theme', 'createdAt', 'updatedAt'])
+        && request.resource.data.gid is string && request.resource.data.gid.size() <= 64
+        && request.resource.data.name is string && request.resource.data.name.size() <= 30
+        && bilingual(request.resource.data.note, 600)
+        && (request.resource.data.get('photo', null) == null || isJpeg(request.resource.data.photo))
+        && request.resource.data.theme in ['classic', 'garden', 'night']
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // 신혼여행 엽서: 관리자만 작성 · 모두 읽기 (목록용 썸네일은 여기, 큰 사진은 postcardImages)
+    match /postcards/{id} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['title', 'msg', 'place', 'theme', 'thumb', 'order', 'createdAt', 'updatedAt'])
+        && bilingual(request.resource.data.title, 60)
+        && optBilingual(request.resource.data, 'msg', 300)
+        && request.resource.data.place is string && request.resource.data.place.size() <= 40
+        && request.resource.data.theme in ['default', 'city', 'beach', 'mountain', 'castle', 'night']
+        && isJpeg(request.resource.data.thumb) && request.resource.data.thumb.size() < 200000
+        && request.resource.data.order is int
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+    match /postcardImages/{id} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['data', 'updatedAt'])
+        && isJpeg(request.resource.data.data)
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // 1주년 재개장 축하 한마디: 하객 1명당 1개 · 2028-04-03 ~ 2028-04-23 (UTC)만 작성
+    match /anniv/{gid} {
+      allow read: if true;
+      allow create: if guestExists(gid)
+        && request.resource.data.keys().hasOnly(['text', 'createdAt'])
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 300
+        && request.resource.data.createdAt == request.time
+        && request.time >= timestamp.date(2028, 4, 3) && request.time < timestamp.date(2028, 4, 24);
+      allow delete: if isAdmin();
+    }
+  }
+}

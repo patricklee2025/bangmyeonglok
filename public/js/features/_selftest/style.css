@@ -1,0 +1,12 @@
+/* _selftest — 코어 자체 점검용 (데모 전용). 모든 선택자는 .f-_selftest- · [data-f="_selftest"] · html.f-_selftest- 로 시작 (02 §1) */
+.f-_selftest-badge { display: none; }
+html.f-_selftest-on { --f-_selftest-on: 1; }
+/* 하객 페이지 (WP-00c): 환영 슬롯 · 허브 · 기능 화면 — 보이는 점검 부품은 작게 */
+.f-_selftest-welcome { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; font-size: 13px; }
+.f-_selftest-btn { min-height: 40px; }
+.f-_selftest-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 2px; }
+.f-_selftest-info { overflow-wrap: anywhere; font-size: 12px; }
+html.f-_selftest-on .hud .hz { outline: 1px dashed rgba(230, 107, 143, .6); }
+/* 마을 (WP-00c): HUD 칩 · 스포트라이트 상자 — 보이는 점검 부품은 작게 */
+.f-_selftest-chip { font-size: 11px; line-height: 1.2; padding: 2px 6px; background: rgba(255, 255, 255, .85); border: 1px solid rgba(0, 0, 0, .25); border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.f-_selftest-spotbox { padding: 12px 16px; font-size: 16px; text-align: center; }

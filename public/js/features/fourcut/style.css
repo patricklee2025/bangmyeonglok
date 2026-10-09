@@ -1,0 +1,34 @@
+/* WP-12 픽셀 네컷 — 모든 선택자는 .f-fourcut- 로 시작 (02 §1) */
+.f-fourcut-cam { position: relative; width: min(100%, 420px, 53vh); margin: 0 auto; aspect-ratio: 4 / 3; overflow: hidden; background: #1d1824; box-shadow: 0 0 0 3px var(--ink, #2b2033); }
+.f-fourcut-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.f-fourcut-nocam .f-fourcut-video { display: none; }
+.f-fourcut-guide { position: absolute; inset: 8%; border: 3px dashed rgba(255, 255, 255, .7); pointer-events: none; }
+.f-fourcut-count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;
+  font-size: 96px; font-weight: 700; color: #fff; text-shadow: 0 4px 0 #2b2033, 0 0 12px rgba(0, 0, 0, .4); }
+.f-fourcut-flash { position: absolute; inset: 0; background: #fff; pointer-events: none; }
+.f-fourcut-dots { display: flex; justify-content: center; gap: 8px; margin: 10px 0 4px; }
+.f-fourcut-dot { width: 14px; height: 14px; background: #fff; box-shadow: inset 0 0 0 3px var(--ink, #2b2033); }
+.f-fourcut-dot-on { background: #e66b8f; }
+.f-fourcut-msg:empty, .f-fourcut-rmsg:empty { display: none; }
+.f-fourcut-msg, .f-fourcut-rmsg { text-align: center; margin: 6px 0; }
+.f-fourcut-frames { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin: 8px 0; }
+.f-fourcut-label { width: 100%; text-align: center; font-size: 13px; color: var(--ink-2, #6b5d73); }
+.f-fourcut-fbtn { min-height: 44px; min-width: 72px; padding: 6px 12px; border: 0; cursor: pointer; font: inherit; font-weight: 700; font-size: 15px;
+  box-shadow: inset 0 0 0 3px var(--ink, #2b2033); touch-action: manipulation; }
+.f-fourcut-f-pink { background: #f7d6e0; color: #2b2033; }
+.f-fourcut-f-mint { background: #cfeee0; color: #2b2033; }
+.f-fourcut-f-night { background: #2b2033; color: #fff; box-shadow: inset 0 0 0 3px #fff8ec, 0 0 0 2px #2b2033; }
+.f-fourcut-fbtn[aria-pressed="true"] { outline: 4px solid #ffd75e; outline-offset: 0; }
+.f-fourcut-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.f-fourcut-actions .px-btn { flex: 1 1 160px; }
+/* result */
+.f-fourcut-pframe { width: min(62%, 260px); margin: 0 auto; box-shadow: 0 0 0 3px var(--ink, #2b2033); background: #fff; }
+.f-fourcut-preview { display: block; width: 100%; height: auto; aspect-ratio: 1 / 3; }
+.f-fourcut-opts { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 10px; }
+.f-fourcut-pixel { min-height: 44px; padding: 6px 14px; border: 0; cursor: pointer; font: inherit; font-weight: 700; background: #fff; box-shadow: inset 0 0 0 3px var(--ink, #2b2033); }
+.f-fourcut-pixel[aria-pressed="true"] { background: #ffd75e; }
+.f-fourcut-rfoot { display: flex; flex-direction: row; flex-wrap: wrap; gap: 4px; }
+.f-fourcut-rfoot .px-btn { flex: 1 1 calc(50% - 12px); min-width: 0; min-height: 52px; font-size: 16px; }
+.f-fourcut-rfoot .f-fourcut-again { flex-basis: 100%; min-height: 44px; font-size: 15px; }
+@media (max-height: 520px) { .f-fourcut-rfoot .px-btn { min-height: 44px; padding-top: 4px; padding-bottom: 4px; } .f-fourcut-pframe { width: min(30%, 160px); } }
+.f-fourcut-rfoot .f-fourcut-tv { font-size: 14px; line-height: 1.2; padding-left: 10px; padding-right: 10px; }

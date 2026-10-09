@@ -1,0 +1,20 @@
+/* WP-03 D-day 마을 — 모든 선택자는 .f-dday- 로 시작 (02 §1). HUD 크기 단위: --s (월드 1px = 화면 px, 코어 .hud) */
+
+/* TV · laptop: the panel in the tl zone (under the level panel) — same look as the core level panel */
+.f-dday-panel { display: flex; flex-direction: column; align-items: flex-start; gap: calc(var(--s, 4) * .4px);
+  padding: calc(var(--s, 4) * 2px) calc(var(--s, 4) * 3px); color: #fff; background: rgba(43, 32, 51, .82); font-size: .85em; line-height: 1.25; }
+.f-dday-title { font-size: .85em; opacity: .9; }
+.f-dday-big { font-size: 2.1em; line-height: 1.05; color: #ffd75e; letter-spacing: .02em; text-shadow: 0 calc(var(--s, 4) * .5px) 0 #2b2033; }
+.f-dday-big.f-dday-small { font-size: 1.25em; line-height: 1.2; }
+.f-dday-date { font-size: .9em; }
+.f-dday-res { font-size: .8em; opacity: .9; }
+
+/* phones: one line in the tc zone (between the level panel and the ⛶ buttons). Nothing to tap */
+.f-dday-chip { padding: 5px 8px; color: #fff; background: rgba(43, 32, 51, .82); box-shadow: inset 0 0 0 2px #fff8ec;
+  font-size: 12px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* nothing to tap: taps fall through to the village (the core zone rule gives HUD items pointer-events: auto — 0,2,0) */
+[data-f="dday"].f-dday-chip.hz-item { pointer-events: none; }
+
+/* guest page welcome slot (order 1): a small chip above the other slots */
+.f-dday-welcome { align-self: center; margin: 0 auto; padding: 5px 12px; background: #fff; color: var(--ink, #2b2033);
+  box-shadow: inset 0 0 0 2px var(--ink, #2b2033); font-size: 14px; font-weight: 700; line-height: 1.3; text-align: center; width: fit-content; max-width: 100%; }
