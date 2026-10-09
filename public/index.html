@@ -1,192 +1,393 @@
-<!doctype html>
-<html lang="ko">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#c4b6e0">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 5 5%22 shape-rendering=%22crispEdges%22%3E%3Cpath fill=%22%23e66b8f%22 d=%22M0 1h5v2H0zM1 0h1v1H1zM3 0h1v1H3zM1 3h3v1H1zM2 4h1v1H2z%22/%3E%3C/svg%3E">
-<title>Wedding Guestbook</title>
-<link rel="preload" href="fonts/Galmuri11.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/style.css">
-<style>
-  body.kiosk .only-guest { display: none !important; }
-  body:not(.kiosk) .only-kiosk { display: none !important; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aeidos Labs | Spatial Web & Pixel Intelligence Platform</title>
+  <meta name="description" content="Multimodal spatial guestbook and procedural pixel avatar engine for interactive events, powered by Anthropic Claude.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.15);
+      --accent-purple: #818cf8;
+      --badge-bg: rgba(56, 189, 248, 0.08);
+      --green: #34d399;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 44px 20px 32px;
+      line-height: 1.5;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 85% 90%, rgba(129, 140, 248, 0.07) 0%, transparent 45%);
+    }
+
+    .main-wrapper { max-width: 860px; width: 100%; margin: auto; }
+
+    .header-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 36px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #090d16;
+      font-weight: 800;
+      font-size: 16px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .status-pill {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--green);
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .hero-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 46px 40px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 24px 48px -18px rgba(0, 0, 0, 0.6);
+    }
+
+    .category-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent);
+      background: var(--badge-bg);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 4px 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.25;
+      margin-bottom: 16px;
+      color: #ffffff;
+    }
+
+    .lead {
+      font-size: 15.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    /* Live Interactive Launcher */
+    .launcher-container {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 34px;
+    }
+
+    .launcher-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .launcher-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      color: #090d16;
+      background: var(--accent);
+    }
+    .btn-primary:hover { background: #7dd3fc; }
+
+    .btn-secondary {
+      color: #e2e8f0;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Feature Grid */
+    .grid-features {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 34px;
+    }
+
+    .feature-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 20px 22px;
+      transition: border-color 0.2s ease;
+    }
+
+    .feature-item:hover { border-color: rgba(56, 189, 248, 0.25); }
+
+    .feature-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .feature-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .model-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent-purple);
+      background: rgba(129, 140, 248, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(129, 140, 248, 0.2);
+    }
+
+    .feature-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Tech Stack Specs */
+    .tech-stack {
+      border-top: 1px solid var(--card-border);
+      padding-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .tech-labels { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .tech-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .contact-cta { font-size: 13px; color: var(--text-muted); }
+    .contact-cta a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .contact-cta a:hover { text-decoration: underline; }
+
+    footer {
+      margin-top: 36px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    @media (max-width: 640px) {
+      .hero-card { padding: 30px 20px; }
+      h1 { font-size: 24px; }
+      .launcher-buttons { flex-direction: column; }
+      .btn-action { width: 100%; justify-content: center; }
+    }
+  </style>
 </head>
-<body class="guest">
-<main class="app">
-  <div class="topbar">
-    <a class="admin-link only-guest" id="admin-link" href="admin.html" aria-label="관리자 / Admin" title="관리자 / Admin">🔑</a>
-    <span class="step-label" id="step-label"></span>
-    <div class="lang" role="group" aria-label="Language">
-      <button type="button" data-lang="ko">한국어</button>
-      <button type="button" data-lang="en">English</button>
-    </div>
+<body>
+
+  <div class="main-wrapper">
+    <!-- Header -->
+    <header class="header-nav">
+      <div class="brand">
+        <div class="brand-icon">A</div>
+        <span>Aeidos Labs</span>
+      </div>
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        Production Beta Live
+      </div>
+    </header>
+
+    <!-- Hero Card -->
+    <main class="hero-card">
+      <span class="category-badge">Multimodal Spatial Web Infrastructure</span>
+      <h1>Autonomous Pixel Avatar Synthesis & Interactive Event Village</h1>
+      <p class="lead">
+        Aeidos Labs powers <strong>Bangmyeonglok (방명록)</strong>—a real-time spatial guestbook bridging physical celebrations with top-down Hanok &times; Florida village environments. We combine on-device computer vision and Anthropic Claude APIs to orchestrate procedural pixel avatars, dynamic in-village advertisements, and multilingual community translations.
+      </p>
+
+      <!-- Interactive Launch Bar -->
+      <div class="launcher-container">
+        <div class="launcher-title">Live Product Demonstrations</div>
+        <div class="launcher-buttons">
+          <a href="village.html?demo=1&seed=20" target="_blank" class="btn-action btn-primary">
+            📺 Launch Village (TV Demo)
+          </a>
+          <a href="guest.html?demo=1" target="_blank" class="btn-action btn-secondary">
+            📱 Mobile Guest Flow
+          </a>
+          <a href="kiosk.html?demo=1" target="_blank" class="btn-action btn-secondary">
+            🏛️ Entrance Kiosk
+          </a>
+          <a href="admin.html?demo=1" target="_blank" class="btn-action btn-secondary">
+            🔑 Admin Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- Core Features -->
+      <div class="grid-features">
+        <!-- Feature 1: Vision to Pixel Avatar -->
+        <div class="feature-item">
+          <div class="feature-header">
+            <div class="feature-title">Multimodal Vision-to-Avatar Pipeline</div>
+            <span class="model-tag">Claude 3.5 Sonnet Vision</span>
+          </div>
+          <div class="feature-desc">
+            Transforms attendee selfies into custom 22&times;34 pixel avatars with procedural hair, facial structures, skin tone lighting calibration, and attire. Upgrading from client-side heuristics to Claude Vision ensures high-fidelity tokenized feature extraction under challenging event lighting.
+          </div>
+        </div>
+
+        <!-- Feature 2: In-Village Contextual Ads -->
+        <div class="feature-item">
+          <div class="feature-header">
+            <div class="feature-title">Contextual In-Village Billboard Matching</div>
+            <span class="model-tag">Claude 3.7 / 3.5 Sonnet</span>
+          </div>
+          <div class="feature-desc">
+            Performs real-time semantic analysis over guestbook logs and sentiment markers. Dynamically matches event sponsors and synthesizes high-converting, personalized billboard greetings displayed across virtual town plazas without human intervention.
+          </div>
+        </div>
+
+        <!-- Feature 3: Real-Time Translation & Narrative -->
+        <div class="feature-item">
+          <div class="feature-header">
+            <div class="feature-title">Multilingual Streaming & Event Narrative Engine</div>
+            <span class="model-tag">Claude Streaming API</span>
+          </div>
+          <div class="feature-desc">
+            Provides sub-second contextual translation preserving celebratory nuances across Korean, English, and global attendees. Post-event, synthesizes hundreds of messages, audio transcripts, and time capsules into automated Instagram-ready (1080&times;1350) narrative reports.
+          </div>
+        </div>
+
+        <!-- Feature 4: High-Concurrency Real-Time Sync -->
+        <div class="feature-item">
+          <div class="feature-header">
+            <div class="feature-title">Spatial IoT Sync & Low-Latency Remote Controls</div>
+            <span class="model-tag">Edge Architecture</span>
+          </div>
+          <div class="feature-desc">
+            Bridges personal mobile remotes (hearts, claps, dancing, bouquet toss) directly to shared TV display canvases. Features in-memory Firestore caching, sub-600KB payload compression, and smart neighbor rotation to protect cloud resource quotas.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tech Stack Badges -->
+      <div class="tech-stack">
+        <div class="tech-labels">
+          <span class="tech-pill">Claude 3.7 Sonnet</span>
+          <span class="tech-pill">Claude Vision</span>
+          <span class="tech-pill">HTML5 Canvas (22x34)</span>
+          <span class="tech-pill">Firebase Firestore</span>
+          <span class="tech-pill">Cloudflare Pages</span>
+        </div>
+        <div class="contact-cta">
+          Contact: <a href="mailto:contact@bangmyeonglok.com">contact@bangmyeonglok.com</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      &copy; 2026 Aeidos Labs. Operating Flagship Deployment: Bangmyeonglok.
+    </footer>
   </div>
 
-  <!-- 0. welcome -->
-  <section class="screen" id="s-welcome">
-    <div class="px-box card hero">
-      <span class="badge">WEDDING</span>
-      <h1 id="hero-names"></h1>
-      <div class="date" id="hero-date"></div>
-      <canvas id="couple-canvas" class="couple-stage pixel" width="110" height="75"></canvas>
-      <p class="sub" data-i18n="welcome_sub"></p>
-      <p class="notice" id="already" hidden data-i18n="already"></p>
-      <div class="row center only-guest" id="mine-row" hidden>
-        <button class="px-btn blue small" id="btn-mysnap" data-i18n="my_snap"></button>
-        <a class="px-btn secondary small" id="btn-village" href="village.html" data-i18n="back_village"></a>
-      </div>
-    </div>
-    <div class="slot" id="slot-welcome"></div>
-    <div class="start-btns">
-      <button class="px-btn big" id="btn-start" data-i18n="start"></button>
-      <button class="px-btn secondary big" id="btn-simple">👵 <span data-i18n="simple_start"></span></button>
-    </div>
-  </section>
-
-  <!-- 1. info -->
-  <section class="screen" id="s-info">
-    <div class="px-box card" style="display:flex;flex-direction:column;gap:16px">
-      <label class="field"><span data-i18n="name"></span>
-        <input class="input" id="in-name" maxlength="20" autocomplete="name" enterkeyhint="next" data-i18n-ph="name_ph">
-      </label>
-      <div class="field" style="display:flex;flex-direction:column;gap:6px;font-weight:700">
-        <span data-i18n="side"></span>
-        <div class="seg" id="side-seg">
-          <button type="button" data-v="groom" aria-pressed="false" data-i18n="side_groom"></button>
-          <button type="button" data-v="bride" aria-pressed="false" data-i18n="side_bride"></button>
-          <button type="button" data-v="both" aria-pressed="true" data-i18n="side_both"></button>
-        </div>
-      </div>
-      <label class="field"><span data-i18n="message"></span>
-        <textarea class="input" id="in-msg" maxlength="200" data-i18n-ph="message_ph"></textarea>
-        <span class="counter" id="msg-count">0 / 200</span>
-      </label>
-      <label class="check priv-check"><input type="checkbox" id="in-priv"><span data-i18n="priv_label"></span></label>
-      <div class="voice" id="voice">
-        <div class="voice-head"><b data-i18n="voice_title"></b><small class="tip" data-i18n="voice_sub"></small></div>
-        <div class="voice-row">
-          <button type="button" class="px-btn small" id="v-rec">🎤 <span data-i18n="voice_rec"></span></button>
-          <button type="button" class="px-btn small" id="v-stop" hidden>⏹ <span data-i18n="voice_stop"></span></button>
-          <button type="button" class="px-btn small blue" id="v-play" hidden>▶ <span data-i18n="voice_play"></span></button>
-          <button type="button" class="px-btn small secondary" id="v-del" hidden>🗑</button>
-          <div class="v-meter" id="v-meter" hidden><i></i></div>
-          <span class="v-time" id="v-time"></span>
-        </div>
-        <p class="err" id="v-err"></p>
-      </div>
-      <details class="capsule only-full" id="capsule-box">
-        <summary>💌 <span data-i18n="capsule_title"></span></summary>
-        <p class="tip" data-i18n="capsule_sub"></p>
-        <textarea class="input" id="in-capsule" maxlength="1000" data-i18n-ph="capsule_ph"></textarea>
-      </details>
-    </div>
-    <div class="sticky-foot">
-      <p class="tip foot-hint" id="info-hint"></p>
-      <div class="foot-row">
-        <button class="px-btn secondary" id="info-back" data-i18n="back"></button>
-        <button class="px-btn grow" id="info-next" disabled data-i18n="next"></button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. photo -->
-  <section class="screen" id="s-photo">
-    <div class="cam px-box">
-      <video id="video" playsinline muted autoplay></video>
-      <canvas id="still" class="still" hidden></canvas>
-      <canvas id="scan" class="still" hidden></canvas>
-      <div class="guide"><div class="guide-text" data-i18n="photo_guide"></div></div>
-      <div class="flash"></div>
-      <div class="fallback" id="cam-fallback" hidden></div>
-    </div>
-    <p class="tip" id="photo-tip" data-i18n="photo_tip"></p>
-    <div id="analysis" hidden>
-      <p class="scan-status" id="scan-status"></p>
-      <div class="chips" id="chips"></div>
-    </div>
-    <div class="row center" id="alt-row">
-      <label class="px-btn secondary small" id="btn-upload" tabindex="0"><span data-i18n="upload"></span><input type="file" id="file" accept="image/*" hidden></label>
-      <button class="px-btn secondary small" id="btn-skip"></button>
-    </div>
-    <label class="check"><input type="checkbox" id="keep-photo" checked><span data-i18n="keep_photo"></span></label>
-    <div class="sticky-foot">
-      <div class="foot-row">
-        <button class="px-btn secondary" id="photo-back"></button>
-        <button class="px-btn grow" id="btn-capture" disabled>📸 <span data-i18n="capture"></span></button>
-        <button class="px-btn secondary" id="btn-retake" hidden data-i18n="retake"></button>
-        <button class="px-btn grow" id="btn-use" hidden data-i18n="to_custom"></button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. customize -->
-  <section class="screen" id="s-custom">
-    <div class="preview-wrap px-box">
-      <canvas id="preview" class="pixel" width="180" height="250"></canvas>
-      <div class="nm"><span class="tag" id="preview-name"></span></div>
-    </div>
-    <div class="tabs" id="tabs" role="tablist"></div>
-    <div class="px-box card scroll-area" id="opts"></div>
-    <div class="sticky-foot">
-      <div class="foot-row">
-        <button class="px-btn secondary" id="custom-back" data-i18n="back"></button>
-        <button class="px-btn secondary" id="btn-random">🎲</button>
-        <button class="px-btn grow" id="btn-to-act" data-i18n="next"></button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. activity -->
-  <section class="screen" id="s-act">
-    <div class="px-box card" style="text-align:center"><h2 style="margin:4px 0" data-i18n="act_title"></h2></div>
-    <div class="acts" id="acts"></div>
-    <div class="sticky-foot">
-      <div class="err" id="submit-err"></div>
-      <div class="foot-row">
-        <button class="px-btn secondary" id="act-back" data-i18n="back"></button>
-        <button class="px-btn grow" id="btn-submit" data-i18n="submit"></button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. done -->
-  <section class="screen" id="s-done">
-    <div class="px-box done-head">
-      <div class="done-stage"><canvas id="done-canvas" class="pixel" width="108" height="156"></canvas><div class="bubble-msg" id="done-msg"></div></div>
-      <h2 data-i18n="done_title"></h2>
-      <p data-i18n="done_sub"></p>
-    </div>
-    <p class="notice" id="done-queued" hidden data-i18n="done_queued"></p>
-    <div class="snapbox px-box only-guest" id="snap-done"></div>
-    <div class="remote px-box only-guest" id="remote-done"></div>
-    <div class="sticky-foot only-guest">
-      <a class="px-btn blue" id="link-village" href="village.html">🏡 <span data-i18n="view_village"></span></a>
-    </div>
-    <div class="handoff px-box only-kiosk" id="handoff">
-      <canvas id="handoff-qr" width="33" height="33"></canvas>
-      <div><b data-i18n="handoff_title"></b><p class="tip" data-i18n="handoff_sub"></p></div>
-    </div>
-    <div class="row center only-kiosk" style="margin-top:auto;flex-direction:column;align-items:center">
-      <button class="px-btn" id="btn-again" data-i18n="again"></button>
-      <span class="tip" id="reset-count"></span>
-    </div>
-  </section>
-  <!-- remote (returning guests) -->
-  <section class="screen" id="s-remote">
-    <div class="snapbox px-box" id="snap-solo"></div>
-    <div class="remote px-box" id="remote-solo"></div>
-    <div class="sticky-foot">
-      <div class="foot-row">
-        <button class="px-btn secondary" id="remote-home" data-i18n="back"></button>
-        <a class="px-btn blue grow" id="link-village2" href="village.html" data-i18n="to_village"></a>
-      </div>
-    </div>
-  </section>
-</main>
-<div class="overlay-sending" id="sending"><span data-i18n="sending" class="dots"></span></div>
-<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script type="module" src="js/guest.js"></script>
 </body>
 </html>
