@@ -1,207 +1,207 @@
-# 💒 픽셀 마을 웨딩 방명록 v2
+# Pixel Village Wedding Guestbook v2
 
-하객이 방명록을 쓰고 셀카를 찍으면, **폰 안에서 얼굴을 분석**해(얼굴형·헤어 길이/앞머리/볼륨·표정·수염·안경·옷색)
-나만의 **픽셀 캐릭터**가 만들어지고, 스타듀밸리 느낌의 **탑다운 한옥 × 플로리다 마을**에 입장해
-낚시·춤·수다·먹방·사진을 즐기며 신랑·신부를 축하합니다.
+When a guest writes in the guestbook and takes a selfie, the app **analyzes the face on the phone** (face shape · hair length / bangs / volume · expression · beard · glasses · shirt color)
+then creates a personalized **pixel character**, enters a **top-down hanok × Florida village** with a Stardew Valley vibe,
+and celebrates the bride and groom through fishing, dancing, chatting, eating, and taking photos.
 
-| 페이지 | 용도 |
+| Page | Purpose |
 |---|---|
-| `index.html` | 하객 폰 (QR). 작성 → 사진 분석 → 꾸미기 → 활동 선택 → **폰 리모컨** |
-| `kiosk.html` | 입구 태블릿 (12초 후 자동 초기화, 2분 방치 시 초기화, 리모컨 없음) |
-| `village.html` | TV 마을 화면 |
-| `admin.html` | 신랑·신부 전용: 수정 · 숨기기 · 삭제 · **선택 일괄 삭제** · **이벤트 실행** · 백업 |
+| `index.html` | Guest phone (QR). Write → photo analysis → dress up → choose activity → **phone remote control** |
+| `kiosk.html` | Entrance tablet (auto resets after 12 seconds, resets after 2 minutes idle, no remote control) |
+| `village.html` | TV village screen |
+| `admin.html` | Bride and groom only: edit · hide · delete · **bulk delete selected** · **run events** · backup |
 
 ---
 
-## 🩹 v3.3 핫픽스 (2026-10) — 규칙 다시 게시 **필요 없음**, `public` 폴더만 다시 올리면 됩니다
-- **두 번째 사진이 안 올라가던 문제**: 폰에서는 Firestore가 브라우저 저장소(IndexedDB) 대신 메모리 캐시를 씀
-  (카메라·앨범을 다녀오면 iOS 등이 저장소 연결을 끊어 그 뒤 쓰기가 모두 실패하던 경로 차단) · 사진을 고를 때마다 새 파일 입력 ·
-  사진 용량 ≤ 600KB(느린 와이파이에서 빨리 올라감) · 일시적인 네트워크 오류는 자동으로 2번 더 시도 · 캔버스 메모리 즉시 반납 ·
-  카카오톡 등 앱 안 브라우저에서는 안내 + "🌐 브라우저로 열기"(누가 썼는지 그대로 이어짐)
-- **아바타 성별**: AI 성별 모델(face-api age_gender, 0.4MB) 추가 — 확신 80% 이상일 때 옷·머리·수염·액세서리를 한 성별로 맞춤
-  (여성: 드레스, 묶은 머리는 올림머리 · 남성: 정장/캐주얼, 긴 머리 오인 방지). 사진 없이 들어온 하객의 랜덤 캐릭터도 한 성별로 일관되게
-- **피부색**: 사진 전체의 조명(색온도·밝기)을 보정한 뒤 밝기로 피부 단계를 고름. 예전처럼 어두운 피부를 "조명이 어둡다"고 보고 밝게 만들지 않음 ·
-  얼굴을 못 찾은 사진은 피부색을 건드리지 않음(예전엔 사진 한가운데 색 — 하늘·벽 — 이 피부가 됨)
-- 신부 영문 이름 Sunkyung
-- 실제 폰 확인(배포 후 5분): 아이폰 Safari · 안드로이드 Chrome · 카카오톡 안에서 각각 **사진 3장을 한 장씩 연달아** 올려 보기
+## 🩹 v3.3 Hotfix (2026-10) — no need to republish rules; just upload the `public` folder again
+- **Second photo upload failure fixed**: on phones, Firestore now uses an in-memory cache instead of browser storage (IndexedDB)
+  (this blocks the path where iOS and similar platforms disconnect storage after camera/album access, which previously caused all later writes to fail) · a fresh file input is created for every photo selection ·
+  photo size ≤ 600KB (uploads faster on slow Wi‑Fi) · temporary network errors are retried 2 more times automatically · canvas memory is released immediately ·
+  in in-app browsers such as KakaoTalk, show guidance + "🌐 Open in browser" (keeps the original writer identity)
+- **Avatar gender**: added AI gender model (face-api age_gender, 0.4MB) — when confidence is 80% or higher, clothing, hair, beard, and accessories are adjusted to one gender
+  (women: dresses, tied hair becomes an updo · men: suits/casual, avoids misclassifying long hair). Random characters for guests without photos are also kept gender-consistent
+- **Skin tone**: after correcting the lighting (color temperature/brightness) of the whole photo, choose the skin tone by brightness. Unlike before, dark skin is no longer interpreted as "the lighting is dark" and made lighter
+  Photos where no face is found do not adjust skin tone (previously, the color in the center of the photo — sky, wall — could become the skin tone)
+- Bride’s English name: Sunkyung
+- Real-device check (5 minutes after deploy): try uploading **three photos one by one in sequence** on iPhone Safari, Android Chrome, and inside KakaoTalk
 
-## ⚠️ 업데이트할 때마다 꼭 할 일 (현재 v3.2)
-1. **Firestore 규칙 다시 게시**: `firestore.rules` 전체를 콘솔 → Firestore → 규칙에 붙여넣고 **게시**
-   (v3.2: 아바타 크기 제한 · 사진/음성 형식 검사 · 스냅 1인 5장 서버 제한 · 리모컨 연타 제한 · 선경 관리자 추가)
-2. 이전 버전 테스트 데이터는 `admin.html` → **보이는 항목 전체 선택 → 선택 삭제**로 정리
-3. **게시 후 5분 실제 점검** (규칙은 실제 Firebase에서만 검증돼요):
-   1. 폰으로 방명록 1건 작성 — 사진 + 음성 + 타임캡슐 포함 → "마을에 도착했어요!"가 뜨면 OK
-   2. 완료 화면에서 스냅 1장 업로드 → ✓ 표시 + TV에 폴라로이드
-   3. 리모컨 하트 → TV 캐릭터 반응
-   4. `admin.html` 로그인 → 사진·음성 재생, ✏️ 수정 저장, 💐 부케 버튼 → TV 반응
-   5. 테스트 데이터 선택 삭제
-   - 어느 단계든 "실패"가 뜨면 규칙 게시가 안 된 것 → 1번 다시
-
----
-
-## 테스트 / 리허설 = 데모 모드
-주소 뒤에 `?demo=1` 을 붙이면 Firebase에 **기록하지 않고** 그 브라우저 안에서만 동작합니다. 같은 브라우저의 다른 탭끼리는 실시간 연동돼요.
-- `village.html?demo=1&seed=20` → 샘플 하객 20명
-- `index.html?demo=1` → 방명록 작성 테스트 (TV 탭에 바로 입장)
-- `admin.html?demo=1` → 로그인 없이 관리 화면 테스트
-
-데모 전용 단축키(마을): `D` 하객 1명 추가 · `L` 5명 추가(레벨업 확인) · `E` 랜덤 이모트
+## ⚠️ Must do every time you update (current v3.2)
+1. **Republish Firestore rules**: paste the full `firestore.rules` into Console → Firestore → Rules and **Publish**
+   (v3.2: avatar size limits · photo/audio format checks · server limit of 5 snaps per guest · remote-control spam throttling · add Sunkyung as admin)
+2. Clean up old test data with `admin.html` → **Select all visible items → Delete selected**
+3. **Check real Firebase 5 minutes after publishing** (rules are only validated on real Firebase):
+   1. Create one guestbook entry on a phone — including photo + voice + time capsule → if "Arrived at the village!" appears, OK
+   2. Upload one snap from the completion screen → ✓ 표시 + polaroid on TV
+   3. Remote heart → TV character reacts
+   4. Log in to `admin.html` → play photo/voice, save an ✏️ edit, click the 💐 bouquet button → TV reacts
+   5. Delete selected test data
+   - If any step says "failed", the rules were not published correctly → go back to step 1
 
 ---
 
-## 마을 화면 (TV)
-- **활동**: 하객이 고른 활동대로 움직여요 — 🎣 선착장/호숫가 낚시(가끔 "월척!") · 💃 댄스 플로어 · 💬 분수대 수다 · 🍰 잔칫상 · 📷 신랑신부 촬영 · 🚶 산책
-- **마을 레벨업** (하객 수 기준): 5명 스트링 라이트 → 10명 분수대 → 20명 꽃길 아치 → 30명 囍 현수막 & 주기적 불꽃놀이 → 40명 강아지·고양이 → 50명 무지개
-- **폰 리모컨**: 하객이 ❤️ 하트 / 👏 박수 / 💃 춤 / ⬆️ 점프 / 👋 인사하러 가기를 누르면 TV 속 캐릭터가 반응 (발밑에 금색 링 + 이름표 강조로 "나 여기 있어!")
-- **이벤트** (관리자 페이지 버튼 또는 TV 키보드)
-  - 💐 **부케 던지기** (`B`): 하객들이 무대 앞에 모이고 → 3·2·1 → 신부가 부케를 던져 랜덤 하객이 받음
-  - 📸 **단체사진** (`G`): 모두 무대 앞에 정렬 → "하나·둘·셋" → 찰칵! **TV 컴퓨터에 PNG 자동 저장**
-  - 🎆 **불꽃놀이** (`X`)
-- 그 외 단축키: `F` 전체화면 · `S` 스크린샷 · `H` 패널 숨기기 · `Q` QR 숨기기 · `N` 낮/밤 · `M` 효과음
+## Testing / rehearsal = demo mode
+Add `?demo=1` after the URL and it runs only inside that browser, without writing to Firebase. Tabs in the same browser stay in sync in real time.
+- `village.html?demo=1&seed=20` → 20 sample guests
+- `index.html?demo=1` → guestbook test (enters the TV tab immediately)
+- `admin.html?demo=1` → admin screen test without login
 
-## 🆕 v3 기능
-
-### 🎤 음성 축하 메시지
-- 방명록 화면에서 **녹음 → 듣기 → 다시** (최대 15초, `config.js`의 `voiceMaxSec`)
-- **신랑·신부만** 관리자 화면에서 들을 수 있어요 (보안 규칙으로 보호). TV에는 "🎤 음성 메시지를 남겼어요"로만 표시
-- 글 없이 음성만 남겨도 OK (어르신 배려)
-- 아이폰 Safari는 m4a, 안드로이드/크롬은 webm 형식으로 저장돼요 → 백업 ZIP의 `voices/` 폴더
-
-### 💌 1주년 타임캡슐
-- 방명록 화면의 "1년 뒤 두 사람에게"(선택). **2028-04-10 전에는 관리자도 읽을 수 없어요** — Firebase 보안 규칙이 서버 시간으로 막아요
-- 공개일 이후 관리자 화면 → 💌 타임캡슐 탭에서 열람, 그 후 백업 ZIP에 `time-capsule.json` 포함
-- ⚠️ 공개일을 바꾸려면 `config.js`의 `capsuleOpen`과 `firestore.rules`의 `timestamp.date(2028, 4, 10)` 두 곳 모두 수정
-- 테스트: `admin.html?demo=1&unlock=1` (데모 모드에서만 잠금 해제 미리보기)
-
-### 👵 간편 모드 (어르신용)
-- 첫 화면 **"간편하게 남기기 (큰 글씨)"** → 이름 · 메시지(또는 음성) → 사진 → **바로 입장**
-- 꾸미기·활동 선택 단계를 건너뛰고, 캐릭터는 사진에서 자동 생성(사진이 없으면 랜덤), 활동도 자동 배정
-
-### 📷 하객 스냅 사진 공유
-- 방명록을 쓴 하객은 **사진을 최대 5장** 올릴 수 있어요 (한 줄 설명 선택). 올리는 곳이 4군데예요:
-  1. 방명록 **완료 화면** 맨 위 (📸 지금 찍기 / 🖼 앨범에서 여러 장)
-  2. **폰 마을 화면** 하단 리모컨 바의 분홍 **📷 사진** 버튼 → 마을을 보면서 바로 업로드, 올린 사진이 내 폰에 폴라로이드로 뜨고 마을 포토월에도 걸림
-  3. 다시 접속하면 첫 화면의 **📷 사진 올리기** 버튼 (옆의 **🏡 다시 마을로** 버튼은 내 캐릭터가 있는 마을 화면으로 바로 이동)
-  4. **키오스크**로 쓴 하객: 완료 화면의 **"📱 내 폰으로 이어하기" QR**을 폰 카메라로 찍으면 그 폰에서 사진 올리기·리모컨 사용 (키오스크는 25초 뒤 초기화)
-- 사진마다 진행 상태 표시(⏳ → ✓), 실패한 사진은 눌러서 다시 시도. 인터넷이 느리면 "연결되면 자동으로 올라가요" 안내
-- **테이블 QR 카드**: `https://<사이트주소>/#snap` 으로 QR을 만들면 이미 방명록을 쓴 하객은 바로 사진 업로드 화면으로 열려요 (안 쓴 하객에게는 "방명록을 남기면 사진도 올릴 수 있어요" 안내)
-- TV의 QR 아래 글씨가 "방명록 남기기" ↔ "📷 사진도 올려요"로 번갈아 바뀌어요
-- TV: 새 사진이 올라오면 **폴라로이드로 화면 중앙에 등장** + 배너, 이후 45초마다 랜덤 슬라이드쇼. 마을 포토월에도 작은 액자로 순환 표시
-- 관리자 → 📷 하객 스냅 탭: TV에서 숨기기/삭제/저장, 전체 ZIP
-- **승인제로 바꾸려면**: `config.js` `snapApproval: true` + `firestore.rules`의 snaps `hidden == false`를 `hidden == true`로 → 관리자가 승인한 사진만 TV에 표시
-- 용량: 1280px로 압축(장당 약 150~350KB). 50명×5장이어도 무료 저장 한도(1GiB)의 10% 미만
-- 1인당 장수(`snapLimitPerGuest`)는 늘릴 수 있지만, TV가 모든 스냅을 내려받으므로 하객 100명 기준 10장 이하를 권장해요
-- 참고: 키오스크 이어하기 QR에는 그 하객의 방명록 ID가 들어 있어, QR을 찍은 사람은 그 이름으로 사진을 올릴 수 있어요 (25초만 표시)
-
-### 📊 결혼식 리포트
-- 관리자 → 📊 결혼식 리포트 탭: 하객 수·사진/음성/타임캡슐/스냅/리모컨 수, 신랑측·신부측 비율, 도착 시간 그래프, 인기 활동·옷차림, 메시지 키워드, 🏆 시상식(리모컨 장인 · 스냅 작가상 · 정성 가득 편지상)
-- **🖼 리포트 이미지 저장** → 인스타그램 세로 비율(1080×1350) PNG. 전체 백업 ZIP에도 `report.png` 포함
-
-> v3로 올릴 때 **`firestore.rules`를 다시 게시**하세요 (음성·타임캡슐·스냅·리모컨 카운터 규칙 추가).
-
-## 리모컨 반응이 보이는 범위 (무료 한도 보호)
-- **TV**: 모든 하객의 리모컨 반응을 실시간으로 보여줌
-- **하객 폰**: 내 반응 + 내 주변 하객 6명의 실제 반응(8분마다 주변 사람으로 교체) + 화면 속 하객들의 가벼운 자동 리액션(폰에서만 연출, 서버 사용 0)
-- 이렇게 해서 하객 폰이 많아도 Firestore 읽기가 폭증하지 않아요 (하객 50명·폰 30대 기준 하루 약 1만 건 미만 예상, 한도 5만)
-
-## 📱 폰에서 마을 보기 (세로/가로 전체화면)
-- 방명록 작성 후 **🏡 마을에서 내 캐릭터 보기** → `village.html?me=<내 ID>` 로 열리며
-  - 세로·가로 모두 **화면을 꽉 채우고**, 카메라가 **내 캐릭터를 따라다님**
-  - 손가락으로 끌어서 마을 둘러보기 (7초 뒤 다시 내 캐릭터로 복귀, 📍 버튼으로 즉시 복귀)
-  - 하단에 **리모컨 바**(하트·박수·춤·점프·인사 + 📷 사진) → 내 캐릭터가 바로 반응하는 걸 폰에서 직접 확인
-  - 방명록을 안 쓰고 마을 링크만 연 사람에게는 하단에 **"✍️ 방명록 남기고 마을에 들어가기"** 버튼
-  - 우측 버튼: ⛶ 전체화면 · 🗺 전체 지도 보기 ↔ 꽉 채우기 · 📍 내 캐릭터
-- 전체화면: 안드로이드는 ⛶ 버튼으로 바로. **iPhone Safari는 웹 전체화면을 막아두어서** ⛶를 누르면
-  "공유 → 홈 화면에 추가" 안내가 뜨고, 홈 화면 아이콘으로 열면 주소창 없이 전체화면으로 열려요
-- 이벤트(부케/단체사진)가 시작되면 폰 화면도 무대로 자동 이동. 단체사진 PNG 자동 저장은 TV(마우스 환경)에서만 됩니다
-- 주소 옵션: `?view=fit` (항상 전체 지도) / `?view=fill` (항상 꽉 채우기)
-
-## 사진 분석에 대해 (정직한 안내)
-- 브라우저 안에서 동작하는 오픈소스 얼굴 인식(face-api / TensorFlow.js, 약 2.4MB)을 사용 → **사진은 분석을 위해 서버로 보내지지 않음**, 비용 0원
-  (단, "신랑·신부에게 사진도 전달" 체크 시 원본은 관리자 전용으로 저장)
-- 성별은 AI 모델로 추정해 확신 80% 이상일 때만 씁니다 (테스트 사진 기준 정확도 높음, 흐리거나 옆모습이면 "모름" → 사진 추정만 사용). 피부색은 조명을 보정한 밝기 기준이라 극단적인 역광에서는 실제보다 어둡게 나올 수 있어요.
-- 얼굴형·표정·눈 모양은 랜드마크 기반이라 비교적 정확하고, **헤어 길이/앞머리/수염/안경은 픽셀 색 분석 기반 추정**이라 배경·조명에 따라 틀릴 수 있어요. 그래서 분석 결과는 꾸미기 화면에서 하객이 바로 고칠 수 있게 했습니다 ("내 사진" 헤어 + 앞머리/길이 조절).
-- 단색 밝은 벽 앞에서 찍을 때 가장 잘 나옵니다 → 키오스크 뒤에 밝은 배경 추천
-
-## 🔑 관리자 화면 들어가기
-- 주소: `https://<사이트주소>/admin.html` → **Google로 로그인** (지환 `jihwan.patrick.lee@gmail.com`, 선경 `sunkyung0212@gmail.com`)
-- 방명록 첫 화면 **왼쪽 위 🔑 아이콘**을 눌러도 들어가요. 하객 눈에 띄지 않게 흐리게 표시되고, 키오스크에는 보이지 않아요
-- 한 번 관리자로 로그인한 기기에서는 🔑가 **"🔑 관리자"** 버튼으로 또렷하게 바뀌어요
-- 하객이 눌러도 로그인 화면만 보이고, 관리자 이메일이 아니면 아무 데이터도 볼 수 없어요 (Google 로그인 + Firestore 규칙으로 보호)
-- 관리자 화면 상단: 🏠 방명록 / 🏡 마을(TV) 바로가기
-
-## 방명록 수정 / 테스트 데이터 삭제
-- `admin.html` → 카드의 **✏️ 수정**: 이름·구분·메시지·활동·아바타(피부/헤어/얼굴/옷 등) 수정 → TV에 즉시 반영
-- **일괄 삭제**: 체크박스로 선택하거나 **보이는 항목 전체 선택** → **선택 삭제** 두 번 클릭(확인)
-- 비상시: Firebase 콘솔 → Firestore → `guests` / `photos` 컬렉션에서 직접 삭제도 가능
+Demo-only shortcuts (village): `D` add 1 guest · `L` add 5 guests (to check level-up) · `E` random emote
 
 ---
 
-## 배포 (Netlify, 무료)
-웹사이트는 **`public` 폴더 하나**입니다 (`docs/`, `tests/`, `tools/`, `dev/`는 개발용 — 올리지 않아요).
-1. <https://app.netlify.com/drop> 에 **`public` 폴더**를 드래그 (또는 Git 연결 시 publish 폴더 = `public`, `netlify.toml`에 이미 설정됨)
-   — 보안 응답 헤더는 `public/_headers`에 있어서 드래그 배포에도 그대로 적용돼요 (`netlify.toml`은 Git 연결 배포에서만 읽혀요)
-2. 사이트 이름 변경 (예: `jihwan-sunkyung`)
-3. Firebase → Authentication → 설정 → **승인된 도메인**에 Netlify 주소 추가
-4. `firestore.rules`(저장소 맨 위) 게시 (위 ⚠️ 참고)
+## Village screen (TV)
+- **Activities**: guests move according to the activity they choose — 🎣 fishing at the dock/lakeside (sometimes "big catch!") · 💃 dance floor · 💬 fountain chat · 🍰 feast table · 📷 bride/groom [...]
+- **Village level-ups** (based on guest count): 5 guests string lights → 10 guests fountain → 20 guests flower arch → 30 guests 囍 banner & periodic fireworks → 40 guests dogs and cats → 50 [...]
+- **Phone remote**: when guests tap ❤️ heart / 👏 clap / 💃 dance / ⬆️ jump / 👋 go say hi, the character on TV reacts (gold ring under the feet + highlighted name tag [...]
+- **Events** (admin page button or TV keyboard)
+  - 💐 **Throw bouquet** (`B`): guests gather in front of the stage → 3·2·1 → the bride throws the bouquet and a random guest catches it
+  - 📸 **Group photo** (`G`): everyone lines up in front of the stage → "one, two, three" → click! **PNG automatically saved on the TV computer**
+  - 🎆 **Fireworks** (`X`)
+- Other shortcuts: `F` fullscreen · `S` screenshot · `H` hide panel · `Q` hide QR · `N` day/night · `M` sound effects
 
-`public/js/config.js` 에 Firebase 설정값이 이미 들어 있어요. 이름/날짜/장소/관리자 이메일만 확인하세요.
-관리자 이메일을 추가하면 `firestore.rules` 의 `isAdmin()` 목록도 같이 수정해야 합니다.
+## 🆕 v3 features
 
-## 화면 사용성 (v3.1 다듬기)
-- 모든 단계 하단에 **[이전] [다음] 고정 바** → 작은 폰(iPhone SE)에서도 스크롤 없이 다음 버튼이 보여요
-- 사진 단계: 카메라 화면 크기를 화면 높이에 맞춤, 찍은 뒤엔 [다시 찍기] [이 캐릭터로 꾸미기]만 남김
-- 키오스크(iPad 세로/가로)와 큰 글씨 모드에서 버튼이 화면 밖으로 밀리던 문제 수정
-- 폰 마을: 도착 배너가 리모컨 바를 가리던 문제 수정, 상단 레벨 패널 크기 축소
-- TV 말풍선: 줄바꿈을 균형 있게 (마지막 줄에 글자 하나만 남지 않게)
+### 🎤 Voice congratulation messages
+- On the guestbook screen: **record → listen → redo** (up to 15 seconds, `voiceMaxSec` in `config.js`)
+- **Bride and groom only** can listen from the admin screen (protected by security rules). TV shows only "🎤 A voice message was left"
+- Voice-only messages are OK (for older guests)
+- iPhone Safari saves m4a, Android/Chrome saves webm → into the `voices/` folder in the backup ZIP
 
-## 당일 체크리스트
-- TV 노트북: **`village.html?tv=1`** → 더블클릭 전체화면 → 화면 한 번 클릭(효과음 켜짐) → 절전 끄기
-  (`?tv=1`을 붙이면 터치스크린 노트북이어도 항상 TV 화면으로 동작해요. 인터넷이 끊기면 화면에 안내가 뜨고 자동으로 다시 연결해요)
-- 키오스크: `kiosk.html` + iPad 사용법 유도된 접근(Guided Access), 밝은 배경
-- 진행자 폰: `admin.html` 로그인해 두고 부케/단체사진/불꽃놀이 타이밍에 버튼
-  - **카카오톡·인스타그램 안에서 열린 브라우저에서는 Google 로그인이 막혀요** → Safari / Chrome으로 열기
-  - 이벤트가 진행 중일 때 다른 이벤트를 누르면 끝난 뒤 이어서 실행돼요
-- 리허설에 `?demo=1`을 쓴 탭은 그 탭이 닫힐 때까지 데모 모드로 남아요 → 실제 운영 전에 **`?demo=0`** 으로 한 번 열거나 탭을 새로 여세요
-- 끝나면: `admin.html` → 전체 백업(ZIP), TV에서 `S` 로 마을 사진 저장
+### 💌 One-year time capsule
+- On the guestbook screen, the "To the two of you in one year" field is optional. **Before 2028-04-10, even admins cannot read it** — Firebase security rules block it using server time
+- After the public date, open it from the admin screen → 💌 Time Capsule tab, and then it is included in the backup ZIP as `time-capsule.json`
+- ⚠️ To change the public date, update both `config.js` `capsuleOpen` and `firestore.rules` `timestamp.date(2028, 4, 10)`
+- Test: `admin.html?demo=1&unlock=1` (preview unlock only in demo mode)
 
-## 보안 · 품질 메모 (v3.2 점검 결과)
-- 하객은 로그인 없이 쓰기 때문에, 공개된 설정값으로 누군가 콘솔에서 데이터를 넣는 것까지 완전히 막을 수는 없어요. 규칙으로 크기·형식·장수·연타를 제한했고, 관리자 화면은 사진/음성으로 위장한 링크를 열지 않아요.
-- 더 강하게 막으려면 **Firebase App Check (reCAPTCHA v3)** 를 켜세요 (콘솔 → App Check, 무료). 켜면 이 앱이 아닌 곳에서의 쓰기가 차단돼요.
-- "숨김" 처리는 TV·마을에서 안 보이게 하는 기능이고, 데이터 자체가 비공개가 되는 건 아니에요. 문제 사진은 **삭제**하세요.
-- 하객을 삭제하면 그 하객의 스냅도 함께 삭제돼요.
+### 👵 Simple mode (for older guests)
+- First screen: **"Leave it easily (large text)"** → name · message (or voice) → photo → **enter immediately**
+- Skips the dress-up and activity-selection steps; the character is auto-generated from the photo (random if there is no photo), and the activity is assigned automatically
 
-## 무료 한도 (Spark)
-쓰기 2만/일, 읽기 5만/일, 저장 1GiB. 50명 기준 하객 쓰기 ~100 + 리모컨 이모트(1회 1쓰기, 3초 쿨다운) 수백 건 수준이라 여유 있어요.
+### 📷 Guest snap photo sharing
+- Guests who wrote in the guestbook can upload **up to 5 photos** each (optional one-line description). There are 4 upload entry points:
+  1. Top of the guestbook **completion screen** (📸 Take now / 🖼 multiple from album)
+  2. Pink **📷 Photo** button in the **phone village screen** remote bar at the bottom → upload while viewing the village, and the uploaded photo appears as a polaroid on the phone and on the village photo wall [...]
+  3. When they return later, the **📷 Upload photo** button on the first screen (the **🏡 Back to village** button beside it jumps straight to the village screen with their character)
+  4. **Kiosk** guest: scan the **"📱 Continue on my phone" QR** on the completion screen with the phone camera to continue photo uploads and remote control on that phone (the kiosk is shown for 25 seconds [...]
+- Each photo shows upload progress (⏳ → ✓); failed photos can be tapped to retry. If the internet is slow, show "It will upload automatically when connected"
+- **Table QR card**: if you make a QR from `https://<site-url>/#snap`, guests who already wrote in the guestbook open directly to the photo upload screen (guests who have not written yet see "Write in the guestbook[...]")
+- The text under the QR on TV alternates between "Write in the guestbook" and "📷 Upload photos too"
+- TV: when a new photo is uploaded, it appears in the center of the screen as a **polaroid** + banner, then starts a random slideshow every 45 seconds. It also cycles through small frames on the village photo wall
+- Admin → 📷 Guest Snap tab: hide/delete/save on TV, full ZIP
+- **To switch to approval mode**: set `config.js` `snapApproval: true` + change snaps in `firestore.rules` from `hidden == false` to `hidden == true` → only admin-approved photos appear on TV
+- Size: compressed to 1280px (about 150–350KB each). Even 50 people × 5 photos stays under 10% of the free storage limit (1GiB)
+- You can increase the per-person limit (`snapLimitPerGuest`), but since TV downloads all snaps, 10 or fewer per 100 guests is recommended
+- Note: the kiosk continue QR includes that guest’s guestbook ID, so whoever scans it can upload photos under that guest’s name (shown for 25 seconds only)
 
-## 파일 구조
+### 📊 Wedding report
+- Admin → 📊 Wedding Report tab: guest count · photo/voice/time-capsule/snap/remote-control counts, bride-side/groom-side ratio, arrival-time graph, popular activities/outfits, message [...]
+- **🖼 Save report image** → Instagram portrait ratio (1080×1350) PNG. Also included as `report.png` in the full backup ZIP
+
+> When upgrading to v3, **republish `firestore.rules`** (adds voice · time capsule · snap · remote-control counter rules).
+
+## Range of visible remote reactions (to protect the free tier)
+- **TV**: shows every guest’s remote reactions in real time
+- **Guest phones**: my reaction + the real reactions of 6 nearby guests (rotated every 8 minutes) + light auto-reactions from characters on screen (purely local on the phone, zero server usage)
+- This keeps Firestore reads under control even with many guest phones (estimated under ~10,000 reads/day for 50 guests and 30 phones, well below the 50,000 limit)
+
+## 📱 Viewing the village on a phone (portrait/landscape fullscreen)
+- After writing the guestbook, tap **🏡 View my character in the village** → opens `village.html?me=<my ID>` and
+  - fills the screen in both portrait and landscape, with the camera following **my character**
+  - lets you drag with your finger to look around the village (returns to your character after 7 seconds, or instantly with the 📍 button)
+  - shows a **remote bar** at the bottom (heart · clap · dance · jump · greet + 📷 photo) so you can see your character react right on the phone
+  - for someone who only opened the village link without writing in the guestbook, show a bottom **"✍️ Write in the guestbook and enter the village"** button
+  - right-side buttons: ⛶ fullscreen · 🗺 show full map ↔ fit · 📍 my character
+- Fullscreen: on Android, use the ⛶ button directly. **iPhone Safari blocks web fullscreen**, so tapping ⛶ shows
+  the "Share → Add to Home Screen" guidance; opening from the home screen icon launches fullscreen without the address bar
+- When an event (bouquet/group photo) starts, the phone screen automatically moves to the stage too. Automatic saving of the group photo PNG only works on TV (mouse environment)
+- URL options: `?view=fit` (always show full map) / `?view=fill` (always fill the screen)
+
+## About photo analysis (honest note)
+- Uses open-source face recognition that runs in the browser (face-api / TensorFlow.js, about 2.4MB) → **photos are not sent to a server for analysis**, cost is 0 won
+  (however, if "also send the photo to the bride and groom" is checked, the original is stored for admin only)
+- Gender is inferred by AI and used only when confidence is 80% or higher (high accuracy on test photos; if blurry or side view, it becomes "unknown" → use only photo-based inference). Skin tone [...]
+- Face shape, expression, and eye shape are relatively accurate because they are landmark-based, while **hair length / bangs / beard / glasses are estimated from pixel color analysis**, so they can vary depending on background and lighting [...]
+- Works best when taken in front of a plain bright wall → recommend a bright background behind the kiosk
+
+## 🔑 Entering the admin screen
+- URL: `https://<site-url>/admin.html` → **Sign in with Google** (Jihwan `jihwan.patrick.lee@gmail.com`, Sunkyung `sunkyung0212@gmail.com`)
+- You can also enter by tapping the **🔑 icon** at the top-left of the guestbook first screen. It is dimmed so guests don’t notice it, and it is not shown on the kiosk
+- On a device where you have already signed in as admin once, the 🔑 changes clearly into a **"🔑 Admin"** button
+- If a guest taps it, they only see the login screen; if the email is not an admin email, they cannot see any data (protected by Google sign-in + Firestore rules)
+- Top of admin screen: quick links to 🏠 Guestbook / 🏡 Village (TV)
+
+## Edit guestbook / delete test data
+- `admin.html` → card **✏️ Edit**: edit name · category · message · activity · avatar (skin / hair / face / clothes, etc.) → reflected on TV immediately
+- **Bulk delete**: select with checkboxes or **Select all visible items** → click **Delete selected** twice (confirmation)
+- In emergencies: you can also delete directly from the Firebase console → Firestore → `guests` / `photos` collections
+
+---
+
+## Deployment (Netlify, free)
+The website is just the **`public` folder** (`docs/`, `tests/`, `tools/`, `dev/` are for development — do not upload them).
+1. Drag the **`public` folder** to <https://app.netlify.com/drop> (or, if using Git, the publish folder is `public`; this is already set in `netlify.toml`)
+   — security response headers are in `public/_headers`, so they apply even for drag-and-drop deploys (`netlify.toml` is only read for Git-connected deploys)
+2. Rename the site (e.g. `jihwan-sunkyung`)
+3. Firebase → Authentication → Settings → add the Netlify address to **Authorized domains**
+4. Publish `firestore.rules` (top of repository) — see ⚠️ above
+
+Firebase config values are already in `public/js/config.js`. Just verify the names / dates / location / admin emails.
+If you add admin emails, update the `isAdmin()` list in `firestore.rules` as well.
+
+## Screen usability (v3.1 polish)
+- A fixed **[Back] [Next] bar** appears at the bottom of every step → the Next button is visible without scrolling even on small phones (iPhone SE)
+- Photo step: camera view is sized to the screen height; after taking a photo, only [Retake] [Use this character] remain
+- Fixed buttons being pushed off-screen in kiosk (iPad portrait/landscape) and large-text mode
+- Phone village: fixed the arrival banner covering the remote bar; reduced the top level panel size
+- TV speech bubbles: balanced line breaks so the last line does not end with a single character
+
+## Day-of checklist
+- TV laptop: **`village.html?tv=1`** → double-click fullscreen → click once on the screen (sound effects on) → disable sleep
+  (with `?tv=1`, even a touchscreen laptop always behaves as the TV screen. If the internet disconnects, an on-screen notice appears and reconnects automatically)
+- Kiosk: `kiosk.html` + iPad Guided Access, bright background
+- Host phone: sign in to `admin.html` and press the bouquet / group photo / fireworks buttons at the right time
+  - **Google sign-in is blocked in browsers opened inside KakaoTalk or Instagram** → open with Safari / Chrome
+  - If you tap another event while one is in progress, it queues and runs after the current event finishes
+- If a rehearsal tab used `?demo=1`, it stays in demo mode until that tab closes → before the real event, either open once with **`?demo=0`** or open a fresh tab
+- When finished: `admin.html` → full backup (ZIP), press `S` on TV to save a village screenshot
+
+## Security · quality notes (v3.2 check results)
+- Because guests write without logging in, you cannot completely stop someone from injecting data through the console using public config values. The rules limit size, format, [...]
+- For stronger protection, enable **Firebase App Check (reCAPTCHA v3)** (Console → App Check, free). When enabled, writes from outside this app are blocked.
+- "Hidden" means the item is not shown in TV/village; it does not make the data private. Delete problematic photos.
+- Deleting a guest also deletes that guest’s snaps.
+
+## Free tier (Spark)
+20,000 writes/day, 50,000 reads/day, 1GiB storage. For 50 guests, guest writes are ~100 + remote emotes (1 write each, 3-second cooldown) amounting to only a few hundred writes, so there is plenty of room.
+
+## File structure
 ```
-public/                 ← 웹사이트 (Netlify에 올리는 폴더)
+public/                 ← website (folder uploaded to Netlify)
   index.html kiosk.html village.html admin.html
-  js/config.js   ← 이름·날짜·관리자·레벨 설정
-  js/avatar.js   픽셀 아바타 엔진 (22x34, 얼굴/헤어 파라미터, 10개 포즈)
-  js/face.js     사진 분석 (face-api 랜드마크 + 픽셀 통계)
-  js/scene.js    탑다운 마을 맵 (타일·소품·동선) — 모두 코드로 그린 오리지널 픽셀아트
-  js/village.js  마을 시뮬레이션 (경로탐색, 활동, 이벤트, 레벨업, 리모컨)
-  js/guest.js    하객/키오스크 흐름     js/snaps.js 스냅 업로더(완료 화면·폰 마을 공용)
-  js/admin.js    관리자                 js/store.js Firebase/데모 저장소
-  js/vendor/     face-api(MIT, TF.js 포함) · qrcode-generator(MIT) · JSZip(MIT)
-  fonts/         Galmuri 픽셀 폰트 (SIL OFL 1.1)
-  _headers       Netlify 응답 헤더 (nosniff · referrer 정책)
-firestore.rules         ← Firebase 콘솔에 붙여넣는 보안 규칙
-docs/v4/                ← v4 개발 설계 (기능 18개 · 작업 패키지 · 당일 런북)
-tests/                  ← 자동 테스트 (`npm test`)
-tools/                  ← 로컬 서버(`npm run serve`) · kiosk.html 생성기
-dev/face-lab/           ← 얼굴 분석 조정용 실험 페이지 (배포 안 함)
-CLAUDE.md               ← Claude Code(Sonnet)용 작업 규칙
+  js/config.js   ← names · dates · admin · level settings
+  js/avatar.js   pixel avatar engine (22x34, face/hair parameters, 10 poses)
+  js/face.js     photo analysis (face-api landmarks + pixel statistics)
+  js/scene.js    top-down village map (tiles · props · paths) — original pixel art drawn entirely in code
+  js/village.js  village simulation (pathfinding, activities, events, level-ups, remote control)
+  js/guest.js    guest/kiosk flow     js/snaps.js snap uploader (shared by completion screen and phone village)
+  js/admin.js    admin                 js/store.js Firebase/demo storage
+  js/vendor/     face-api (MIT, includes TF.js) · qrcode-generator (MIT) · JSZip (MIT)
+  fonts/         Galmuri pixel font (SIL OFL 1.1)
+  _headers       Netlify response headers (nosniff · referrer policy)
+firestore.rules         ← security rules to paste into Firebase Console
+docs/v4/                ← v4 development design (18 features · work packages · day-of runbook)
+tests/                  ← automated tests (`npm test`)
+tools/                  ← local server (`npm run serve`) · kiosk.html generator
+dev/face-lab/           ← experimental page for tuning face analysis (not deployed)
+CLAUDE.md               ← work rules for Claude Code (Sonnet)
 ```
-> `public/index.html` 을 수정했다면 `npm run gen:kiosk` 로 `kiosk.html` 을 다시 만드세요 (body class 와 title만 다름).
+> If you modify `public/index.html`, run `npm run gen:kiosk` to regenerate `kiosk.html` (only the body class and title differ).
 
-## 개발 · 테스트 (v4)
+## Development · testing (v4)
 ```bash
-npm i                 # 처음 한 번 (테스트용 Playwright)
+npm i                 # once, for Playwright
 npm run serve         # http://127.0.0.1:8123/index.html?demo=1
-npm run test:quick    # 40초 점검
-npm test              # 전체 자동 테스트 (약 6–7분)
+npm run test:quick    # 40-second check
+npm test              # full automated tests (about 6–7 minutes)
 ```
-v4 기능 추가 계획과 작업 방법: [`docs/v4/README.md`](docs/v4/README.md) · Claude Code 프롬프트: [`docs/v4/PROMPTS.md`](docs/v4/PROMPTS.md) · 결혼식 당일: [`docs/v4/06-runbook.md`](docs/v4/06-runbook.md)
+v4 feature expansion plan and workflow: [`docs/v4/README.md`](docs/v4/README.md) · Claude Code prompts: [`docs/v4/PROMPTS.md`](docs/v4/PROMPTS.md) · Wedding day: [`docs/v4/06-runbook.md`](docs/v4/06-runbook.md)
